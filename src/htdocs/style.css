@@ -34,7 +34,6 @@ body {
 .scrollable {
   overflow: scroll;
   scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
 .active {
@@ -194,11 +193,11 @@ body {
 
 /*Editor*/
 #editor {
-  width: calc(100vw - 40px - 40px);
+  width: calc(100vw - 20px - 20px);
   height: calc(100vh - 65px - 27px - 20px - 20px - 20px - 40px);
 
   padding: 20px 0px;
-  margin: 0px 40px;
+  margin: 0px 20px;
 }
 
 /*Rows*/
@@ -206,11 +205,11 @@ body {
   position: relative;
 
   min-width: 800px;
-  min-height: 100%;
+  min-height: calc(100% - 5px - 5px);
 
   padding: 5px;
 
-  background-color: #373738;
+  background-color: #161618;
 }
 
 .row {
@@ -287,7 +286,7 @@ body {
 #addPermissionForm {
   display: flex;
 
-  width: calc(100vw - 20px - 20px - 20px - 20px - 5px - 5px);
+  width: calc(100vw - 20px - 20px - 20px - 5px - 5px);
   height: 30px;
 
   margin-left: 40px;
@@ -421,13 +420,13 @@ body {
   }
 
   #editor {
-    width: calc(100vw - 40px - 250px);
+    width: calc(100vw - 20px - 250px);
 
     margin-left: 250px;
   }
 
   #addPermissionForm {
-    width: calc(100vw - 250px - 20px - 20px - 5px - 5px);
+    width: calc(100vw - 250px - 20px - 5px - 5px);
 
     margin-left: 250px;
   }

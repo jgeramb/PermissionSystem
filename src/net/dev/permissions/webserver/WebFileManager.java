@@ -44,10 +44,12 @@ public class WebFileManager implements HttpHandler {
 		
 		if(permissionSystem.getFileUtils().getConfig().getBoolean("WebServer.DeleteFiles")) {
 			try {
-				if(System.getProperty("os.name").contains("Windows"))
-					Runtime.getRuntime().exec(new String[] { "rd", "/s", "/q", "\"" + webServerDirectory.getAbsolutePath() + "\"" });
-				else
-					Runtime.getRuntime().exec(new String[] { "rm", "-r", "\"" + webServerDirectory.getAbsolutePath() + "\"" });
+				Runtime.getRuntime().exec(new String[] { "rd", "/s", "/q", webServerDirectory.getAbsolutePath() });
+			} catch (IOException ex) {
+			}
+			
+			try {
+				Runtime.getRuntime().exec(new String[] { "rm", "-r", webServerDirectory.getAbsolutePath() });
 			} catch (IOException ex) {
 			}
 		}
@@ -182,7 +184,7 @@ public class WebFileManager implements HttpHandler {
 			}
 			
 			if(response.contains("%permissions%")) {
-				String permissions = "<h1 style=\"position: absolute; width: 100%; top: 50%; text-align: center; letter-spacing: -0.8px; transform: translateY(-50%);\">⇦ Select a group or a player from the sidebar</h1>";
+				String permissions = "<h1 style=\"position: relative; top: calc(50vh - 65px - 20px); text-align: center; letter-spacing: -0.8px; transform: translateY(-50%);\">⇦ Select a group or a player from the sidebar</h1>";
 				
 				if(parameters.containsKey("group") || parameters.containsKey("user")) {
 					permissions = "<div id=\"headerRow\" class=\"unselectable\"><p id=\"firstHeaderPart\">Permission</p><p>Value</p></div>";
@@ -240,11 +242,12 @@ public class WebFileManager implements HttpHandler {
 			
 			if(parameters.containsKey("permission")) {
 				String permission = parameters.get("permission");
+				boolean valueEnabled = parameters.containsKey("value");
 				
 				if(parameters.containsKey("group"))
-					new PermissionGroup(parameters.get("group")).addPermission(permission);
+					new PermissionGroup(parameters.get("group")).addPermission((valueEnabled ? "" : "-") + permission);
 				else if(parameters.containsKey("user"))
-					new PermissionUser(UUID.fromString(parameters.get("user"))).addPermission(permission);
+					new PermissionUser(UUID.fromString(parameters.get("user"))).addPermission((valueEnabled ? "" : "-") + permission);
 				
 				reloadPage = true;
 			}
