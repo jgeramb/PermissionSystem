@@ -21,10 +21,10 @@ public class AsyncPlayerChatListener implements Listener {
 		
 		if (fileUtils.getConfig().getBoolean("Settings.ReplaceChatFormat")) {
 			Player p = e.getPlayer();
-			PermissionUser pp = new PermissionUser(p.getUniqueId());
+			PermissionUser permissionUser = new PermissionUser(p.getUniqueId());
 
-			String prefix = pp.getGroupChatPrefix() + pp.getChatPrefix();
-			String suffix = pp.getChatSuffix() + pp.getGroupChatSuffix();
+			String prefix = permissionUser.getGroupChatPrefix() + permissionUser.getChatPrefix();
+			String suffix = permissionUser.getChatSuffix() + permissionUser.getGroupChatSuffix();
 
 			if (permissionSystem.isEazyNickInstalled()) {
 				if (new NickManager(p).isNicked()) {

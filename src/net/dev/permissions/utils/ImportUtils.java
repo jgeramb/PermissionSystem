@@ -100,6 +100,8 @@ public class ImportUtils {
 			String suffix = user.getSuffix();
 			String chatSuffix = user.getChatSuffix();
 			List<String> permissions = user.getPermissions();
+			String tempGroupName = mysqlPermissionManager.getPlayerTempGroupName(uuid);
+			long tempGroupTime = mysqlPermissionManager.getPlayerTempGroupTime(uuid);
 			
 			fileUtils.getConfig().set("MySQL.Enabled", false);
 			
@@ -118,6 +120,17 @@ public class ImportUtils {
 				fileUser.setChatSuffix(chatSuffix);
 			
 			permissionConfigUtils.getConfig().set("Players." + uuid + ".Permissions", permissions);
+			
+			if(tempGroupName != null) {
+				List<String> ranks = permissionConfigUtils.getConfig().getStringList("TempRanks");
+				
+				if(!(ranks.contains(uuid)))
+					ranks.add(uuid);
+				
+				permissionConfigUtils.getConfig().set("TempRanks", ranks);
+				permissionConfigUtils.getConfig().set("Ranks." + uuid + ".GroupName", tempGroupName);
+				permissionConfigUtils.getConfig().set("Ranks." + uuid + ".Time", tempGroupTime);
+			}
 			
 			fileUtils.getConfig().set("MySQL.Enabled", true);
 			
@@ -193,6 +206,13 @@ public class ImportUtils {
 			String suffix = user.getSuffix();
 			String chatSuffix = user.getChatSuffix();
 			List<String> permissions = user.getPermissions();
+			String tempGroupName = null;
+			long tempGroupTime = 0L;
+			
+			if(permissionConfigUtils.getConfig().getStringList("TempRanks").contains(uuid)) {
+				tempGroupName = permissionConfigUtils.getConfig().getString("Ranks." + uuid + ".GroupName");
+				tempGroupTime = permissionConfigUtils.getConfig().getLong("Ranks." + uuid + ".Time");
+			}
 			
 			fileUtils.getConfig().set("MySQL.Enabled", true);
 			
@@ -212,6 +232,9 @@ public class ImportUtils {
 			
 			mysqlPermissionManager.setPlayerPermissions(uuid, permissions.toString());
 			mysqlPermissionManager.saveToUUIDCache(uuid);
+			
+			if(tempGroupName != null)
+				mysqlPermissionManager.setPlayerTempGroup(uuid, tempGroupName, tempGroupTime);
 			
 			user.updatePermissions();
 		}

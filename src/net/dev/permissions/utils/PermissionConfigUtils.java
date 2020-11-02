@@ -17,7 +17,6 @@ public class PermissionConfigUtils {
 	
 	private File directory, file;
 	private YamlConfiguration cfg;
-	private int i = 0;
 	
 	public PermissionConfigUtils() {
 		permissionSystem = PermissionSystem.getInstance();
@@ -54,43 +53,23 @@ public class PermissionConfigUtils {
 	public void updateTempRanks() {
 		List<String> ranks = cfg.getStringList("TempRanks");
 		
-		if(ranks.size() >= 1) {
-			ArrayList<String> toRemove = new ArrayList<>();
+		for (String uuid : new ArrayList<>(ranks)) {
+			String path = "Ranks." + uuid;
 			
-			for (String uuid : ranks) {
-				String path = "Ranks." + uuid;
-				
-				int newTime = (cfg.getInt(path + ".Time") - 1);
-				boolean hasGroupName = cfg.contains(path + ".GroupName");
-				String groupName = cfg.getString(path + ".GroupName");
-				
-				if((newTime <= 0) || (hasGroupName && !(permissionSystem.getPermissionUserManager().getPermissionPlayer(UUID.fromString(uuid)).getGroupNames().contains(groupName)))) {
-					toRemove.add(uuid);
-					
-					if(hasGroupName)
-						new PermissionGroup(groupName).removeMemberWithUUID(uuid);
-					
-					cfg.set(path, null);
-					saveFile();
-					
-					permissionSystem.updatePrefixesAndSuffixes();
-				} else
-					cfg.set(path + ".Time",  newTime);
-			}
+			boolean hasGroupName = cfg.contains(path + ".GroupName");
+			String groupName = cfg.getString(path + ".GroupName");
 			
-			i++;
-			
-			if(i == 10) {
-				i = 0;
+			if((cfg.getLong(path + ".Time") <= System.currentTimeMillis()) || (hasGroupName && !(permissionSystem.getPermissionUserManager().getPermissionPlayer(UUID.fromString(uuid)).getGroupNames().contains(groupName)))) {
+				ranks.remove(uuid);
 				
-				if(toRemove.size() >= 1) {
-					toRemove.forEach(uuid -> ranks.remove(uuid));
-					
-					cfg.set("TempRanks", ranks);
-					saveFile();
-					
-					cfg = YamlConfiguration.loadConfiguration(file);
-				}
+				if(hasGroupName)
+					new PermissionGroup(groupName).removeMemberWithUUID(uuid);
+				
+				cfg.set(path, null);
+				cfg.set("TempRanks", ranks);
+				saveFile();
+				
+				permissionSystem.updatePrefixesAndSuffixes();
 			}
 		}
 	}

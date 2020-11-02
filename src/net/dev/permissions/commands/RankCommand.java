@@ -39,29 +39,29 @@ public class RankCommand implements CommandExecutor {
 			
 			if(p.hasPermission(new Permission("permissions.*", PermissionDefault.FALSE)) || p.hasPermission(new Permission("permissions.rank", PermissionDefault.FALSE))) {
 				if(args.length == 2) {
-					PermissionGroup pg = new PermissionGroup(args[1]);
+					PermissionGroup permissionGroup = new PermissionGroup(args[1]);
 					
-					if(pg.exists()) {
+					if(permissionGroup.exists()) {
 						for (PermissionGroup group : permissionUserManager.getPermissionPlayer(args[0]).getGroups())
 							group.removeMember(args[0], false);
 						
-						pg.addMember(args[0], true);
+						permissionGroup.addMember(args[0], true);
 						
 						Player t = Bukkit.getPlayer(args[0]);
 						
 						if((t != null) && fileUtils.getConfig().getBoolean("Settings.RankKick"))
-							t.kickPlayer(ChatColor.translateAlternateColorCodes('&', fileUtils.getConfig().getString("Settings.RankKickMessage").replace("%getPrefix()%", prefix).replace("%rankName%", pg.getName()).replace("%rankSetter%", p.getName()).replace("%expiryTime%", fileUtils.getConfig().getString("Settings.RankKickExpiryNever"))));
+							t.kickPlayer(ChatColor.translateAlternateColorCodes('&', fileUtils.getConfig().getString("Settings.RankKickMessage").replace("%getPrefix()%", prefix).replace("%rankName%", permissionGroup.getName()).replace("%rankSetter%", p.getName()).replace("%expiryTime%", fileUtils.getConfig().getString("Settings.RankKickExpiryNever"))));
 							
-						p.sendMessage(prefix + "§eThe group of the player §a" + args[0] + " §ewas set to §d" + pg.getName() + "§7!");
+						p.sendMessage(prefix + "§eThe group of the player §a" + args[0] + " §ewas set to §d" + permissionGroup.getName() + "§7!");
 					} else
 						p.sendMessage(prefix + "§cThe group §e" + args[1] + " §cdoes not exist§7!");
 				} else if(args.length >= 4) {
-					PermissionGroup pg = new PermissionGroup(args[1]);
+					PermissionGroup permissionGroup = new PermissionGroup(args[1]);
 					
-					if(pg.exists()) {
+					if(permissionGroup.exists()) {
 						int value = 0;
 						Player t  = Bukkit.getPlayer(args[0]);
-						PermissionUser pp = permissionUserManager.getPermissionPlayer(args[0]);
+						PermissionUser permissionUser = permissionUserManager.getPermissionPlayer(args[0]);
 						UUID uuid;
 						String name;
 						
@@ -93,27 +93,31 @@ public class RankCommand implements CommandExecutor {
 							else if(unit.equalsIgnoreCase("years"))
 								time *= 60 * 60 * 24 * 30 * 12;
 							
-							for (PermissionGroup group : pp.getGroups())
+							for (PermissionGroup group : permissionUser.getGroups())
 								group.removeMember(name, false);
 							
-							pg.addMember(name, true);
+							permissionGroup.addMember(name, true);
 							
-							List<String> ranks = permissionConfigUtils.getConfig().getStringList("TempRanks");
-							
-							if(!(ranks.contains(uuid.toString())))
-								ranks.add(uuid.toString());
-							
-							permissionConfigUtils.getConfig().set("TempRanks", ranks);
-							permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".GroupName", pg.getName());
-							permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".Time", time);
-							permissionConfigUtils.saveFile();
+							if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
+								permissionSystem.getMySQLPermissionManager().setPlayerTempGroup(uuid.toString(), permissionGroup.getName(), System.currentTimeMillis() + (time * 1000));
+							else {
+								List<String> ranks = permissionConfigUtils.getConfig().getStringList("TempRanks");
+								
+								if(!(ranks.contains(uuid.toString())))
+									ranks.add(uuid.toString());
+								
+								permissionConfigUtils.getConfig().set("TempRanks", ranks);
+								permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".GroupName", permissionGroup.getName());
+								permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".Time", System.currentTimeMillis() + (time * 1000));
+								permissionConfigUtils.saveFile();
+							}
 							
 							String[] expiryTime = utils.getFormattedTime(time);
 							
 							if((t != null) && fileUtils.getConfig().getBoolean("Settings.RankKick"))
-								t.kickPlayer(ChatColor.translateAlternateColorCodes('&', fileUtils.getConfig().getString("Settings.RankKickMessage").replace("%getPrefix()%", prefix).replace("%rankName%", pg.getName()).replace("%rankSetter%", p.getName()).replace("%expiryTime%", fileUtils.getConfig().getString("Settings.RankKickExpiryFormat").replace("%years%", expiryTime[0]).replace("%months%", expiryTime[1]).replace("%days%", expiryTime[2]).replace("%hours%", expiryTime[3]).replace("%minutes%", expiryTime[4]).replace("%seconds%", expiryTime[5]))));
+								t.kickPlayer(ChatColor.translateAlternateColorCodes('&', fileUtils.getConfig().getString("Settings.RankKickMessage").replace("%prefix%", prefix).replace("%rankName%", permissionGroup.getName()).replace("%rankSetter%", p.getName()).replace("%expiryTime%", fileUtils.getConfig().getString("Settings.RankKickExpiryFormat").replace("%years%", expiryTime[0]).replace("%months%", expiryTime[1]).replace("%days%", expiryTime[2]).replace("%hours%", expiryTime[3]).replace("%minutes%", expiryTime[4]).replace("%seconds%", expiryTime[5]))));
 								
-							p.sendMessage(prefix + "§eThe group of the player §a" + name + " §ewas set to §d" + pg.getName() + " §efor §d" + value + " " + unit + "§7!");
+							p.sendMessage(prefix + "§eThe group of the player §a" + name + " §ewas set to §d" + permissionGroup.getName() + " §efor §d" + value + " " + unit + "§7!");
 						} else
 							p.sendMessage(prefix + "§e/rank «playername» «groupname» («value» «seconds|minutes|hours|days|months|years»)");
 					} else
@@ -123,29 +127,29 @@ public class RankCommand implements CommandExecutor {
 			} else
 				p.sendMessage(utils.getNoPerm());
 		} else if(args.length == 2) {
-			PermissionGroup pg = new PermissionGroup(args[1]);
+			PermissionGroup permissionGroup = new PermissionGroup(args[1]);
 			
-			if(pg.exists()) {
+			if(permissionGroup.exists()) {
 				for (PermissionGroup group : permissionUserManager.getPermissionPlayer(args[0]).getGroups())
 					group.removeMember(args[0], false);
 				
-				pg.addMember(args[0], true);
+				permissionGroup.addMember(args[0], true);
 				
 				Player t = Bukkit.getPlayer(args[0]);
 				
 				if((t != null) && fileUtils.getConfig().getBoolean("Settings.RankKick"))
-					t.kickPlayer(ChatColor.translateAlternateColorCodes('&', fileUtils.getConfig().getString("Settings.RankKickMessage").replace("%getPrefix()%", prefix).replace("%rankName%", pg.getName()).replace("%rankSetter%", "CONSOLE").replace("%expiryTime%", fileUtils.getConfig().getString("Settings.RankKickExpiryNever"))));
+					t.kickPlayer(ChatColor.translateAlternateColorCodes('&', fileUtils.getConfig().getString("Settings.RankKickMessage").replace("%getPrefix()%", prefix).replace("%rankName%", permissionGroup.getName()).replace("%rankSetter%", "CONSOLE").replace("%expiryTime%", fileUtils.getConfig().getString("Settings.RankKickExpiryNever"))));
 					
-				utils.sendConsole("§eThe group of the player §a" + args[0] + " §ewas set to §d" + pg.getName() + "§7!");
+				utils.sendConsole("§eThe group of the player §a" + args[0] + " §ewas set to §d" + permissionGroup.getName() + "§7!");
 			} else
 				utils.sendConsole("§cThe group §e" + args[1] + " §cdoes not exist§7!");
 		} else if(args.length >= 4) {
-			PermissionGroup pg = new PermissionGroup(args[1]);
+			PermissionGroup permissionGroup = new PermissionGroup(args[1]);
 			
-			if(pg.exists()) {
+			if(permissionGroup.exists()) {
 				int value = 0;
 				Player t  = Bukkit.getPlayer(args[0]);
-				PermissionUser pp = permissionUserManager.getPermissionPlayer(args[0]);
+				PermissionUser permissionUser = permissionUserManager.getPermissionPlayer(args[0]);
 				UUID uuid;
 				String name;
 				
@@ -177,27 +181,31 @@ public class RankCommand implements CommandExecutor {
 					else if(unit.equalsIgnoreCase("years"))
 						time *= 60 * 60 * 24 * 30 * 12;
 					
-					for (PermissionGroup group : pp.getGroups())
+					for (PermissionGroup group : permissionUser.getGroups())
 						group.removeMember(name, false);
 					
-					pg.addMember(name, true);
+					permissionGroup.addMember(name, true);
 					
-					List<String> ranks = permissionConfigUtils.getConfig().getStringList("TempRanks");
-					
-					if(!(ranks.contains(uuid.toString())))
-						ranks.add(uuid.toString());
-					
-					permissionConfigUtils.getConfig().set("TempRanks", ranks);
-					permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".GroupName", pg.getName());
-					permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".Time", time);
-					permissionConfigUtils.saveFile();
+					if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
+						permissionSystem.getMySQLPermissionManager().setPlayerTempGroup(uuid.toString(), permissionGroup.getName(), System.currentTimeMillis() + (time * 1000));
+					else {
+						List<String> ranks = permissionConfigUtils.getConfig().getStringList("TempRanks");
+						
+						if(!(ranks.contains(uuid.toString())))
+							ranks.add(uuid.toString());
+						
+						permissionConfigUtils.getConfig().set("TempRanks", ranks);
+						permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".GroupName", permissionGroup.getName());
+						permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".Time", System.currentTimeMillis() + (time * 1000));
+						permissionConfigUtils.saveFile();
+					}
 					
 					String[] expiryTime = utils.getFormattedTime(time);
 					
 					if((t != null) && fileUtils.getConfig().getBoolean("Settings.RankKick"))
-						t.kickPlayer(ChatColor.translateAlternateColorCodes('&', fileUtils.getConfig().getString("Settings.RankKickMessage").replace("%getPrefix()%", prefix).replace("%rankName%", pg.getName()).replace("%rankSetter%", "CONSOLE").replace("%expiryTime%", fileUtils.getConfig().getString("Settings.RankKickExpiryFormat").replace("%years%", expiryTime[0]).replace("%months%", expiryTime[1]).replace("%days%", expiryTime[2]).replace("%hours%", expiryTime[3]).replace("%minutes%", expiryTime[4]).replace("%seconds%", expiryTime[5]))));
+						t.kickPlayer(ChatColor.translateAlternateColorCodes('&', fileUtils.getConfig().getString("Settings.RankKickMessage").replace("%prefix%", prefix).replace("%rankName%", permissionGroup.getName()).replace("%rankSetter%", "CONSOLE").replace("%expiryTime%", fileUtils.getConfig().getString("Settings.RankKickExpiryFormat").replace("%years%", expiryTime[0]).replace("%months%", expiryTime[1]).replace("%days%", expiryTime[2]).replace("%hours%", expiryTime[3]).replace("%minutes%", expiryTime[4]).replace("%seconds%", expiryTime[5]))));
 						
-					utils.sendConsole("§eThe group of the player §a" + name + " §ewas set to §d" + pg.getName() + " §efor §d" + value + " " + unit + "§7!");
+					utils.sendConsole("§eThe group of the player §a" + name + " §ewas set to §d" + permissionGroup.getName() + " §efor §d" + value + " " + unit + "§7!");
 				} else
 					utils.sendConsole("§e/rank «playername» «groupname» («value» «seconds|minutes|hours|days|months|years»)");
 			} else

@@ -646,7 +646,7 @@ class ServerImpl implements TimeSource {
                 }
                 /* check if client sent an Expect 100 Continue.
                  * In that case, need to send an interim response.
-                 * In future API may be modified to allow app to
+                 * In future API may be modified to allow apermissionUserto
                  * be involved in this process.
                  */
                 String exp = headers.getFirst("Expect");

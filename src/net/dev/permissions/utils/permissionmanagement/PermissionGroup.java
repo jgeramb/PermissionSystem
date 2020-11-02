@@ -135,9 +135,9 @@ public class PermissionGroup {
 
 	public void updatePermissions() {
 		for (Player p : getOnlineMembers()) {
-			PermissionUser pp = new PermissionUser(p.getUniqueId());
+			PermissionUser permissionUser = new PermissionUser(p.getUniqueId());
 			
-			pp.updatePermissions();
+			permissionUser.updatePermissions();
 		}
 	}
 

@@ -64,6 +64,8 @@ public class MySQLPermissionManager {
 			values.put(SQLProperty.USER_SUFFIX, new HashMap<String, String>());
 			values.put(SQLProperty.USER_CHAT_PREFIX, new HashMap<String, String>());
 			values.put(SQLProperty.USER_CHAT_SUFFIX, new HashMap<String, String>());
+			values.put(SQLProperty.USER_TEMP_GROUP_NAME, new HashMap<String, String>());
+			values.put(SQLProperty.USER_TEMP_GROUP_TIME, new HashMap<String, Long>());
 			
 			try {
 				ResultSet rs = mysql.getResult("SELECT * FROM PermissionUsers");
@@ -83,6 +85,8 @@ public class MySQLPermissionManager {
 					((HashMap<String, String>) values.get(SQLProperty.USER_SUFFIX)).put(uuid, rs.getString("suffix"));
 					((HashMap<String, String>) values.get(SQLProperty.USER_CHAT_PREFIX)).put(uuid, rs.getString("chat_prefix"));
 					((HashMap<String, String>) values.get(SQLProperty.USER_CHAT_SUFFIX)).put(uuid, rs.getString("chat_suffix"));
+					((HashMap<String, String>) values.get(SQLProperty.USER_TEMP_GROUP_NAME)).put(uuid, rs.getString("temp_group_name"));
+					((HashMap<String, Long>) values.get(SQLProperty.USER_TEMP_GROUP_TIME)).put(uuid, rs.getLong("temp_group_time"));
 				}
 				
 				rs.close();
@@ -112,12 +116,31 @@ public class MySQLPermissionManager {
 		return (values.containsKey(SQLProperty.USER_CHAT_SUFFIX) ? ((HashMap<String, String>) values.get(SQLProperty.USER_CHAT_SUFFIX)).get(uuid) : null);
 	}
 	
+	public String getPlayerTempGroupName(String uuid) {
+		return (values.containsKey(SQLProperty.USER_TEMP_GROUP_NAME) ? ((HashMap<String, String>) values.get(SQLProperty.USER_TEMP_GROUP_NAME)).get(uuid) : null);
+	}
+	
+	public long getPlayerTempGroupTime(String uuid) {
+		return (values.containsKey(SQLProperty.USER_TEMP_GROUP_TIME) ? ((HashMap<String, Long>) values.get(SQLProperty.USER_TEMP_GROUP_TIME)).get(uuid) : 0L);
+	}
+	
 	public void setPlayerPermissions(String uuid, String permissions) {
 		if(mysql.isConnected()) {
 			if(!(isUUIDInCache(uuid)))
 				mysql.update("INSERT INTO PermissionUsers (uuid, prefix, suffix, chat_prefix, chat_suffix, permissions) VALUES ('" + uuid + "', '', '', '', '', '" + permissions + "')");
 			else
 				mysql.update("UPDATE PermissionUsers SET permissions = '" + permissions + "' WHERE UUID = '" + uuid + "'");
+		}
+		
+		if(values.containsKey(SQLProperty.USER_PERMISSIONS)) {
+			List<String> list = new ArrayList<>();
+			
+			if(!(permissions.equalsIgnoreCase("[]"))){
+				for (String string : permissions.replace("[", "").replace("]", "").split(", "))
+					list.add(string.trim());
+			}
+			
+			((HashMap<String, List<String>>) values.get(SQLProperty.USER_PERMISSIONS)).put(uuid, list);
 		}
 	}
 
@@ -126,6 +149,9 @@ public class MySQLPermissionManager {
 			if(isUUIDInCache(uuid))
 				mysql.update("UPDATE PermissionUsers SET prefix = '" + value + "' WHERE UUID = '" + uuid + "'");
 		}	
+		
+		if(values.containsKey(SQLProperty.USER_PREFIX))
+			((HashMap<String, String>) values.get(SQLProperty.USER_PREFIX)).put(uuid, value);
 	}
 
 	public void setPlayerChatPrefix(String uuid, String value) {
@@ -133,20 +159,42 @@ public class MySQLPermissionManager {
 			if(isUUIDInCache(uuid))
 				mysql.update("UPDATE PermissionUsers SET chat_prefix = '" + value + "' WHERE UUID = '" + uuid + "'");
 		}	
+		
+		if(values.containsKey(SQLProperty.USER_CHAT_PREFIX))
+			((HashMap<String, String>) values.get(SQLProperty.USER_CHAT_PREFIX)).put(uuid, value);
 	}
 
 	public void setPlayerSuffix(String uuid, String value) {
 		if(mysql.isConnected()) {
 			if(isUUIDInCache(uuid))
 				mysql.update("UPDATE PermissionUsers SET suffix = '" + value + "' WHERE UUID = '" + uuid + "'");
-		}		
+		}
+		
+		if(values.containsKey(SQLProperty.USER_SUFFIX))
+			((HashMap<String, String>) values.get(SQLProperty.USER_SUFFIX)).put(uuid, value);
 	}
 	
 	public void setPlayerChatSuffix(String uuid, String value) {
 		if(mysql.isConnected()) {
 			if(isUUIDInCache(uuid))
 				mysql.update("UPDATE PermissionUsers SET chat_suffix = '" + value + "' WHERE UUID = '" + uuid + "'");
-		}		
+		}
+		
+		if(values.containsKey(SQLProperty.USER_CHAT_SUFFIX))
+			((HashMap<String, String>) values.get(SQLProperty.USER_CHAT_SUFFIX)).put(uuid, value);
+	}
+	
+	public void setPlayerTempGroup(String uuid, String groupName, long time) {
+		if(mysql.isConnected()) {
+			if(isUUIDInCache(uuid))
+				mysql.update("UPDATE PermissionUsers SET temp_group_name = '" + groupName + "', temp_group_time = '" + time + "' WHERE UUID = '" + uuid + "'");
+		}
+		
+		if(values.containsKey(SQLProperty.USER_TEMP_GROUP_NAME))
+			((HashMap<String, String>) values.get(SQLProperty.USER_TEMP_GROUP_NAME)).put(uuid, groupName);
+		
+		if(values.containsKey(SQLProperty.USER_TEMP_GROUP_TIME))
+			((HashMap<String, Long>) values.get(SQLProperty.USER_TEMP_GROUP_TIME)).put(uuid, time);
 	}
 	
 	//Group management
@@ -255,6 +303,16 @@ public class MySQLPermissionManager {
 			if(isGroupRegistered(groupName))
 				mysql.update("DELETE FROM PermissionGroups WHERE name = '" + groupName + "'");
 		}
+		
+		((HashMap<String, List<String>>) values.get(SQLProperty.GROUP_PERMISSIONS)).remove(groupName);
+		((HashMap<String, List<String>>) values.get(SQLProperty.GROUP_MEMBERS)).remove(groupName);
+		((HashMap<String, String>) values.get(SQLProperty.GROUP_PREFIX)).remove(groupName);
+		((HashMap<String, String>) values.get(SQLProperty.GROUP_SUFFIX)).remove(groupName);
+		((HashMap<String, String>) values.get(SQLProperty.GROUP_CHAT_PREFIX)).remove(groupName);
+		((HashMap<String, String>) values.get(SQLProperty.GROUP_CHAT_SUFFIX)).remove(groupName);
+		((HashMap<String, String>) values.get(SQLProperty.GROUP_PARENT)).remove(groupName);
+		((HashMap<String, Boolean>) values.get(SQLProperty.GROUP_DEFAULT)).remove(groupName);
+		((HashMap<String, Integer>) values.get(SQLProperty.GROUP_WEIGHT)).remove(groupName);
 	}
 	
 	public void setGroupPermissions(String groupName, String permissions) {
@@ -263,14 +321,28 @@ public class MySQLPermissionManager {
 				mysql.update("INSERT INTO PermissionGroups (name, prefix, suffix, chat_prefix, chat_suffix, is_default, parent, weight, members, permissions) VALUES ('" + groupName + "', '', '', '', '', false, '', 1, '[]', '" + permissions + "')");
 			else
 				mysql.update("UPDATE PermissionGroups SET permissions = '" + permissions + "' WHERE name = '" + groupName + "'");
-		}		
+		}
+		
+		if(values.containsKey(SQLProperty.GROUP_PERMISSIONS)) {
+			List<String> list = new ArrayList<>();
+			
+			if(!(permissions.equalsIgnoreCase("[]"))){
+				for (String string : permissions.replace("[", "").replace("]", "").split(", "))
+					list.add(string.trim());
+			}
+			
+			((HashMap<String, List<String>>) values.get(SQLProperty.GROUP_PERMISSIONS)).put(groupName, list);
+		}
 	}
 	
 	public void setGroupPrefix(String groupName, String value) {
 		if(mysql.isConnected()) {
 			if(isGroupRegistered(groupName))
 				mysql.update("UPDATE PermissionGroups SET prefix = '" + value + "' WHERE name = '" + groupName + "'");
-		}	
+		}
+		
+		if(values.containsKey(SQLProperty.GROUP_PREFIX))
+			((HashMap<String, String>) values.get(SQLProperty.GROUP_PREFIX)).put(groupName, value);
 	}
 	
 	public void setGroupChatPrefix(String groupName, String value) {
@@ -278,6 +350,9 @@ public class MySQLPermissionManager {
 			if(isGroupRegistered(groupName))
 				mysql.update("UPDATE PermissionGroups SET chat_prefix = '" + value + "' WHERE name = '" + groupName + "'");
 		}	
+		
+		if(values.containsKey(SQLProperty.GROUP_CHAT_PREFIX))
+			((HashMap<String, String>) values.get(SQLProperty.GROUP_CHAT_PREFIX)).put(groupName, value);
 	}
 
 	public void setGroupSuffix(String groupName, String value) {
@@ -285,6 +360,9 @@ public class MySQLPermissionManager {
 			if(isGroupRegistered(groupName))
 				mysql.update("UPDATE PermissionGroups SET suffix = '" + value + "' WHERE name = '" + groupName + "'");
 		}	
+		
+		if(values.containsKey(SQLProperty.GROUP_SUFFIX))
+			((HashMap<String, String>) values.get(SQLProperty.GROUP_SUFFIX)).put(groupName, value);
 	}
 
 	public void setGroupChatSuffix(String groupName, String value) {
@@ -292,6 +370,9 @@ public class MySQLPermissionManager {
 			if(isGroupRegistered(groupName))
 				mysql.update("UPDATE PermissionGroups SET chat_suffix = '" + value + "' WHERE name = '" + groupName + "'");
 		}	
+
+		if(values.containsKey(SQLProperty.GROUP_CHAT_SUFFIX))
+			((HashMap<String, String>) values.get(SQLProperty.GROUP_CHAT_SUFFIX)).put(groupName, value);
 	}
 
 	public void setGroupMembers(String groupName, String members) {
@@ -299,6 +380,17 @@ public class MySQLPermissionManager {
 			if(isGroupRegistered(groupName))
 				mysql.update("UPDATE PermissionGroups SET members = '" + members + "' WHERE name = '" + groupName + "'");
 		}	
+		
+		if(values.containsKey(SQLProperty.GROUP_MEMBERS)) {
+			List<String> list = new ArrayList<>();
+			
+			if(!(members.equalsIgnoreCase("[]"))){
+				for (String string : members.replace("[", "").replace("]", "").split(", "))
+					list.add(string.trim());
+			}
+			
+			((HashMap<String, List<String>>) values.get(SQLProperty.GROUP_MEMBERS)).put(groupName, list);
+		}
 	}
 	
 	public void setGroupParent(String groupName, String value) {
@@ -306,20 +398,29 @@ public class MySQLPermissionManager {
 			if(isGroupRegistered(groupName))
 				mysql.update("UPDATE PermissionGroups SET parent = '" + value + "' WHERE name = '" + groupName + "'");
 		}	
+		
+		if(values.containsKey(SQLProperty.GROUP_PARENT))
+			((HashMap<String, String>) values.get(SQLProperty.GROUP_PARENT)).put(groupName, value);
 	}
 	
 	public void setIsDefault(String groupName, boolean value) {
 		if(mysql.isConnected()) {
 			if(isGroupRegistered(groupName))
 				mysql.update("UPDATE PermissionGroups SET is_default = " + value + " WHERE name = '" + groupName + "'");
-		}		
+		}
+		
+		if(values.containsKey(SQLProperty.GROUP_DEFAULT))
+			((HashMap<String, Boolean>) values.get(SQLProperty.GROUP_DEFAULT)).put(groupName, value);
 	}
 
 	public void setGroupWeight(String groupName, int value) {
 		if(mysql.isConnected()) {
 			if(isGroupRegistered(groupName))
 				mysql.update("UPDATE PermissionGroups SET weight = '" + value + "' WHERE name = '" + groupName + "'");
-		}	
+		}
+		
+		if(values.containsKey(SQLProperty.GROUP_WEIGHT))
+			((HashMap<String, Integer>) values.get(SQLProperty.GROUP_WEIGHT)).put(groupName, value);
 	}
 
 	public void setValues(HashMap<SQLProperty, Object> values) {

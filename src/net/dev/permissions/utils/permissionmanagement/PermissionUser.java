@@ -133,8 +133,8 @@ public class PermissionUser {
 			for(String permission : getPermissions())
 				pa.setPermission(permission, true);
 			
-			for(PermissionGroup pg : getGroups()) {
-				PermissionGroup group = pg;
+			for(PermissionGroup permissionGroup : getGroups()) {
+				PermissionGroup group = permissionGroup;
 				String parent = "";
 				
 				while((parent = group.getParent()) != null) {
@@ -149,10 +149,10 @@ public class PermissionUser {
 						break;
 				}
 				
-				for(String permission : pg.getPermissions())
+				for(String permission : permissionGroup.getPermissions())
 					pa.setPermission(permission, true);
 				
-				pa.setPermission("group." + pg.getName().toLowerCase(), true);
+				pa.setPermission("group." + permissionGroup.getName().toLowerCase(), true);
 			}
 			
 			p.recalculatePermissions();
@@ -202,9 +202,9 @@ public class PermissionUser {
 	public List<String> getGroupNames() {
 		List<String> permissionGroups = new ArrayList<>();
 		
-		for(PermissionGroup pg : permissionGroupManager.getPermissionGroups()) {
-			if(pg.getMemberUUIDs().contains(uuid))
-				permissionGroups.add(pg.getName());
+		for(PermissionGroup permissionGroup : permissionGroupManager.getPermissionGroups()) {
+			if(permissionGroup.getMemberUUIDs().contains(uuid))
+				permissionGroups.add(permissionGroup.getName());
 		}
 		
 		return permissionGroups;
@@ -213,9 +213,9 @@ public class PermissionUser {
 	public List<PermissionGroup> getGroups() {
 		List<PermissionGroup> permissionGroups = new ArrayList<>();
 		
-		for(PermissionGroup pg : permissionGroupManager.getPermissionGroups()) {
-			if(pg.getMemberUUIDs().contains(uuid))
-				permissionGroups.add(pg);
+		for(PermissionGroup permissionGroup : permissionGroupManager.getPermissionGroups()) {
+			if(permissionGroup.getMemberUUIDs().contains(uuid))
+				permissionGroups.add(permissionGroup);
 		}
 		
 		return permissionGroups;
@@ -292,8 +292,8 @@ public class PermissionUser {
 	public String getGroupPrefix() {
 		String prefix = "";
 		
-		for(PermissionGroup pg : getGroups()) {
-			String s = pg.getPrefix();
+		for(PermissionGroup permissionGroup : getGroups()) {
+			String s = permissionGroup.getPrefix();
 			
 			if(s != null)
 				prefix += s;
@@ -305,8 +305,8 @@ public class PermissionUser {
 	public String getGroupChatPrefix() {
 		String prefix = "";
 		
-		for(PermissionGroup pg : getGroups()) {
-			String s = pg.getChatPrefix();
+		for(PermissionGroup permissionGroup : getGroups()) {
+			String s = permissionGroup.getChatPrefix();
 			
 			if(s != null)
 				prefix += s;
@@ -318,8 +318,8 @@ public class PermissionUser {
 	public String getGroupSuffix() {
 		String prefix = "";
 		
-		for(PermissionGroup pg : getGroups()) {
-			String s = pg.getSuffix();
+		for(PermissionGroup permissionGroup : getGroups()) {
+			String s = permissionGroup.getSuffix();
 			
 			if(s != null)
 				prefix += s;
@@ -331,8 +331,8 @@ public class PermissionUser {
 	public String getGroupChatSuffix() {
 		String prefix = "";
 		
-		for(PermissionGroup pg : getGroups()) {
-			String s = pg.getChatSuffix();
+		for(PermissionGroup permissionGroup : getGroups()) {
+			String s = permissionGroup.getChatSuffix();
 			
 			if(s != null)
 				prefix += s;
@@ -345,10 +345,10 @@ public class PermissionUser {
 		PermissionGroup group = null;
 		int lowestWeight = 999999999;
 		
-		for (PermissionGroup pg : getGroups()) {
-			if(pg.getWeight() < lowestWeight) {
-				lowestWeight = pg.getWeight();
-				group = pg;
+		for (PermissionGroup permissionGroup : getGroups()) {
+			if(permissionGroup.getWeight() < lowestWeight) {
+				lowestWeight = permissionGroup.getWeight();
+				group = permissionGroup;
 			}
 		}
 			

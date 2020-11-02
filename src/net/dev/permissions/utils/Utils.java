@@ -83,7 +83,7 @@ public class Utils {
 		return ip;
 	}
 
-	public String formatTime(int rawTime) {
+	public String formatTime(long rawTime) {
 		String time = "";
 		String[] expiryTime = getFormattedTime(rawTime);
 		
@@ -108,9 +108,9 @@ public class Utils {
 		return time.trim();
 	}
 
-	public String[] getFormattedTime(int rawTime) {
+	public String[] getFormattedTime(long rawTime) {
 		String[] time = new String[6];
-		int timeToFormat = rawTime;
+		long timeToFormat = rawTime;
 		
 		int secondMax = 1;
 		int minuteMax = 60;
@@ -122,7 +122,7 @@ public class Utils {
 		for (int i = 0; i < time.length; i++)
 			time[i] = "0";
 		
-		int years = timeToFormat / yearMax;
+		long years = timeToFormat / yearMax;
 		
 		if(years >= 1) {
 			time[0] = "" + years;
@@ -130,7 +130,7 @@ public class Utils {
 			timeToFormat -= years * yearMax;
 		}
 		
-		int months = timeToFormat / monthMax;
+		long months = timeToFormat / monthMax;
 		
 		if(months >= 1) {
 			time[1] = "" + months;
@@ -138,7 +138,7 @@ public class Utils {
 			timeToFormat -= months * monthMax;
 		}
 		
-		int days = timeToFormat / dayMax;
+		long days = timeToFormat / dayMax;
 		
 		if(days >= 1) {
 			time[2] = "" + days;
@@ -146,7 +146,7 @@ public class Utils {
 			timeToFormat -= days * dayMax;
 		}
 		
-		int hours = timeToFormat / hourMax;
+		long hours = timeToFormat / hourMax;
 		
 		if(hours >= 1) {
 			time[3] = "" + hours;
@@ -154,7 +154,7 @@ public class Utils {
 			timeToFormat -= hours * hourMax;
 		}
 		
-		int minutes = timeToFormat / minuteMax;
+		long minutes = timeToFormat / minuteMax;
 		
 		if(minutes >= 1) {
 			time[4] = "" + minutes;
@@ -162,7 +162,7 @@ public class Utils {
 			timeToFormat -= minutes * minuteMax;
 		}
 		
-		int seconds = timeToFormat;
+		long seconds = timeToFormat;
 		
 		if(seconds >= 1) {
 			time[5] = "" + seconds;

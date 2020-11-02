@@ -115,9 +115,9 @@ public class PermissionSystem extends JavaPlugin {
 			mysql = new MySQL(cfg.getString("MySQL.host"), cfg.getString("MySQL.port"), cfg.getString("MySQL.database"), cfg.getString("MySQL.user"), cfg.getString("MySQL.password"));
 			mysql.connect();
 
-			mysql.update("CREATE TABLE IF NOT EXISTS PermissionUsers (uuid varchar(64), prefix varchar(64), suffix varchar(64), chat_prefix varchar(64), chat_suffix varchar(64), permissions text(32000))");
-			mysql.update("CREATE TABLE IF NOT EXISTS PermissionGroups (name varchar(256), prefix varchar(64), suffix varchar(64), chat_prefix varchar(64), chat_suffix varchar(64), is_default boolean, weight int, parent varchar(64), members text(32000), permissions text(32000))");
-			mysql.update("CREATE TABLE IF NOT EXISTS UUIDCache (uuid varchar(64))");
+			mysql.update("CREATE TABLE IF NOT EXISTS PermissionUsers (uuid varchar(64) PRIMARY KEY NOT NULL, prefix varchar(64), suffix varchar(64), chat_prefix varchar(64), chat_suffix varchar(64), permissions text(32000), temp_group_name varchar(256), temp_group_time bigint)");
+			mysql.update("CREATE TABLE IF NOT EXISTS PermissionGroups (name varchar(256) PRIMARY KEY NOT NULL, prefix varchar(64), suffix varchar(64), chat_prefix varchar(64), chat_suffix varchar(64), is_default boolean, weight int, parent varchar(64), members text(32000), permissions text(32000))");
+			mysql.update("CREATE TABLE IF NOT EXISTS UUIDCache (uuid varchar(64) PRIMARY KEY NOT NULL)");
 			
 			mysqlPermissionManager = new MySQLPermissionManager(mysql);
 			importUtils = new ImportUtils();
@@ -125,19 +125,13 @@ public class PermissionSystem extends JavaPlugin {
 			t = new Timer();
 			t.schedule(new TimerTask() {
 				
-				int i = 0;
-				
 				@Override
 				public void run() {
-					if((i % 2) == 0) {
-						mysqlPermissionManager.setValues(new HashMap<>());
-						mysqlPermissionManager.collectUserData();
-						mysqlPermissionManager.collectGroupData();
-					}
-					
-					i++;
+					mysqlPermissionManager.setValues(new HashMap<>());
+					mysqlPermissionManager.collectUserData();
+					mysqlPermissionManager.collectGroupData();
 				}
-			}, 0, 2500);
+			}, 0, 10000);
 		}
 
 		getCommand("perms").setTabCompleter(new TabCompleter() {
@@ -295,7 +289,19 @@ public class PermissionSystem extends JavaPlugin {
 							}
 
 							teamUtils.updateTeams();
-							permissionConfigUtils.updateTempRanks();
+
+							if(cfg.getBoolean("MySQL.Enabled")) {
+								for(String uuid : mysqlPermissionManager.getUUIDCache()) {
+									String tempGroupName = mysqlPermissionManager.getPlayerTempGroupName(uuid);
+									
+									if((tempGroupName != null) && (mysqlPermissionManager.getPlayerTempGroupTime(uuid) <= System.currentTimeMillis())) {
+										new PermissionGroup(tempGroupName).removeMemberWithUUID(uuid);
+										
+										updatePrefixesAndSuffixes();
+									}
+								}
+							} else
+								permissionConfigUtils.updateTempRanks();
 						}
 					}, 50, 20);
 				}
@@ -305,7 +311,7 @@ public class PermissionSystem extends JavaPlugin {
 		if(isPlaceholderAPIInstalled())
 			new PlaceHolderExpansion(instance).register();
 		
-		utils.sendConsole("§7The system has been§8: §aENABLED");
+		utils.sendConsole("§eThe system has been enabled§7!");
 	}
 
 	@Override
@@ -318,7 +324,7 @@ public class PermissionSystem extends JavaPlugin {
 		
 		permissionConfigUtils.saveFile();
 		
-		utils.sendConsole("§7The system has been§8: §cDISABLED");
+		utils.sendConsole("§cThe system has been disabled§7!");
 	}
 
 	public void updatePrefixesAndSuffixes() {

@@ -18,16 +18,17 @@ public class DebugPermsCommand implements CommandExecutor {
 		
 		if(sender instanceof Player) {
 			Player p = (Player) sender;
+			String prefix = utils.getPrefix();
 			
 			if(p.hasPermission(new Permission("permissions.debug", PermissionDefault.FALSE)) || p.hasPermission(new Permission("permissions.*", PermissionDefault.FALSE))) {
 				if(utils.getDebugging().contains(p)) {
 					utils.getDebugging().remove(p);
 					
-					p.sendMessage(utils.getPrefix() + "§cYou are no longer in debug mode§7!");
+					p.sendMessage(prefix + "§cYou are no longer in debug mode§7!");
 				} else {
 					utils.getDebugging().add(p);
 					
-					p.sendMessage(utils.getPrefix() + "§eYou are now in debug mode§7!");
+					p.sendMessage(prefix + "§eYou are now in debug mode§7!");
 				}
 			} else
 				p.sendMessage(utils.getNoPerm());
