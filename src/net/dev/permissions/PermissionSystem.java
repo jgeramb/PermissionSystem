@@ -298,6 +298,8 @@ public class PermissionSystem extends JavaPlugin {
 										new PermissionGroup(tempGroupName).removeMemberWithUUID(uuid);
 										
 										updatePrefixesAndSuffixes();
+										
+										mysqlPermissionManager.setPlayerTempGroup(uuid, null, 0L);
 									}
 								}
 							} else
