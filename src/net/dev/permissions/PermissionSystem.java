@@ -338,7 +338,7 @@ public class PermissionSystem extends JavaPlugin {
 			teamUtils.setTeamSuffixes(new HashMap<>());
 			teamUtils.setTeamSuffixesChat(new HashMap<>());
 			teamUtils.setTeamSuffixesPlayerList(new HashMap<>());
-
+			
 			for (PermissionGroup group : permissionGroupManager.getPermissionGroups()) {
 				group.registerGroupIfNotExisting();
 				

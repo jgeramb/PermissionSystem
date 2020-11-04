@@ -186,7 +186,7 @@ public class PermissionUser {
 			utils.sendDebugMessage("§ePlayer §a" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + " §ewas registered§7!");
 		}
 		
-		if(getGroups().isEmpty()) {
+		if(getGroups().isEmpty() && !(permissionGroupManager.getPermissionGroups().isEmpty())) {
 			PermissionGroup group = new PermissionGroup("DEFAULT");
 			
 			for (PermissionGroup g : permissionGroupManager.getPermissionGroups()) {
@@ -194,8 +194,8 @@ public class PermissionUser {
 					group = g;
 			}
 			
-			group.registerGroupIfNotExisting();
-			group.addMemberWithUUID(uuid);
+			if(group.exists())
+				group.addMemberWithUUID(uuid);
 		}
 	}
 	
