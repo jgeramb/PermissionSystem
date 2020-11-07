@@ -28,8 +28,6 @@ public class PlayerQuitListener implements Listener {
 		
 		if(utils.getDebugging().contains(p))
 			utils.getDebugging().remove(p);
-		
-		permissionSystem.updatePrefixesAndSuffixes();
 	}
 
 }

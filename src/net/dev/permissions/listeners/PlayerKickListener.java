@@ -28,8 +28,6 @@ public class PlayerKickListener implements Listener {
 		
 		if(utils.getDebugging().contains(p))
 			utils.getDebugging().remove(p);
-		
-		permissionSystem.updatePrefixesAndSuffixes();
 	}
 
 }

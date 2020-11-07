@@ -343,7 +343,7 @@ public class PermissionUser {
 
 	public PermissionGroup getHighestGroup() {
 		PermissionGroup group = null;
-		int lowestWeight = 999999999;
+		int lowestWeight = Integer.MAX_VALUE;
 		
 		for (PermissionGroup permissionGroup : getGroups()) {
 			if(permissionGroup.getWeight() < lowestWeight) {

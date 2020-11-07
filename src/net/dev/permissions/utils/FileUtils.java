@@ -41,7 +41,7 @@ public class FileUtils {
 		cfg.addDefault("Messages.Prefix", "&8» &3System &7┃ ");
 		cfg.addDefault("Messages.NoPerm", "&cYou are not allowed to perform this command&7!");
 		cfg.addDefault("Settings.ReplaceChatFormat", true);
-		cfg.addDefault("Settings.ChatFormat", "%prefix%%name%%suffix%&7: &r%message%");
+		cfg.addDefault("Settings.ChatFormat", "%prefix%%name%%suffix%&7: &f%message%");
 		cfg.addDefault("Settings.UsePrefixesAndSuffixes", true);
 		cfg.addDefault("Settings.RankKick", true);
 		cfg.addDefault("Settings.RankKickMessage", "%prefix%\n\n&7You received the rank &3%rankName% &7from the player &e%rankSetter%\n&7Expiry&8: &3%expiryTime%");
