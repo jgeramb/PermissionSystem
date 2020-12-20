@@ -264,10 +264,8 @@ public class PermissionSystem extends JavaPlugin {
 					group.setWeight(999);
 				}
 				
-				if(cfg.getBoolean("WebServer.Enabled")) {
+				if(cfg.getBoolean("WebServer.Enabled"))
 					webServerManager = new WebServerManager(cfg.getInt("WebServer.Port"));
-					webFileManager = new WebFileManager();
-				}
 				
 				if (cfg.getBoolean("Settings.UsePrefixesAndSuffixes")) {
 					updatePrefixesAndSuffixes();
@@ -513,6 +511,10 @@ public class PermissionSystem extends JavaPlugin {
 	
 	public UUIDFetching getUUIDFetching() {
 		return uuidFetching;
+	}
+	
+	public void setWebFileManager(WebFileManager webFileManager) {
+		this.webFileManager = webFileManager;
 	}
 	
 	public void setPermissionConfigUtils(PermissionConfigUtils permissionConfigUtils) {

@@ -35,10 +35,8 @@ public class WebFileManager implements HttpHandler {
 	private PermissionSystem permissionSystem;
 	private File webServerDirectory;
 	
-	public WebFileManager() {
+	public WebFileManager(HttpServer server) {
 		permissionSystem = PermissionSystem.getInstance();
-		
-		HttpServer server = permissionSystem.getWebServerManager().getServer();
 		
 		webServerDirectory = new File("plugins/" + permissionSystem.getDescription().getName() + "/htdocs/");
 		

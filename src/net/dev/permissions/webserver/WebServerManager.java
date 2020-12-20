@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.UUID;
 
+import net.dev.permissions.PermissionSystem;
+
 import lib.com.sun.net.httpserver.HttpServer;
 
 public class WebServerManager {
@@ -18,14 +20,17 @@ public class WebServerManager {
 			
 			authKey = UUID.randomUUID().toString().replace("-", "");
 			
+			PermissionSystem.getInstance().setWebFileManager(new WebFileManager(server));
+			
 			System.out.println("Started webserver on port " + port + "!");
 		} catch (IOException ex) {
-			System.out.println("Could not start webserver on port " + port + "!");
+			System.out.println("Could not start webserver on port " + port + ": " + ex.getMessage());
 		}
 	}
 	
 	public void stop() {
-		server.stop(0);
+		if(server != null)
+			server.stop(0);
 	}
 	
 	public String getAuthKey() {

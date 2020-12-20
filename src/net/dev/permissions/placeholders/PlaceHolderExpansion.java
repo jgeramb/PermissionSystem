@@ -23,7 +23,7 @@ public class PlaceHolderExpansion extends PlaceholderExpansion {
 			
 			if(identifier.equals("highest_group") || identifier.equals("group")) {
 				String group = "";
-				int weight = 999;
+				int weight = Integer.MAX_VALUE;
 				
 				for (PermissionGroup tmpGroup : user.getGroups()) {
 					if(tmpGroup.getWeight() < weight) {
@@ -36,7 +36,7 @@ public class PlaceHolderExpansion extends PlaceholderExpansion {
 			}
 			
 			if(identifier.equals("highest_group_weight") || identifier.equals("group_weight")) {
-				int weight = 999;
+				int weight = Integer.MAX_VALUE;
 				
 				for (PermissionGroup tmpGroup : user.getGroups()) {
 					if(tmpGroup.getWeight() < weight)
@@ -48,7 +48,7 @@ public class PlaceHolderExpansion extends PlaceholderExpansion {
 			
 			if(identifier.equals("highest_group_prefix") || identifier.equals("group_prefix")) {
 				String prefix = "";
-				int weight = 999;
+				int weight = Integer.MAX_VALUE;
 				
 				for (PermissionGroup tmpGroup : user.getGroups()) {
 					if(tmpGroup.getWeight() < weight) {
@@ -62,7 +62,7 @@ public class PlaceHolderExpansion extends PlaceholderExpansion {
 			
 			if(identifier.equals("highest_group_suffix") || identifier.equals("group_suffix")) {
 				String suffix = "";
-				int weight = 999;
+				int weight = Integer.MAX_VALUE;
 				
 				for (PermissionGroup tmpGroup : user.getGroups()) {
 					if(tmpGroup.getWeight() < weight) {
@@ -76,7 +76,7 @@ public class PlaceHolderExpansion extends PlaceholderExpansion {
 			
 			if(identifier.equals("highest_group_chat_prefix") || identifier.equals("group_chat_prefix")) {
 				String prefix = "";
-				int weight = 999;
+				int weight = Integer.MAX_VALUE;
 				
 				for (PermissionGroup tmpGroup : user.getGroups()) {
 					if(tmpGroup.getWeight() < weight) {
@@ -90,7 +90,7 @@ public class PlaceHolderExpansion extends PlaceholderExpansion {
 			
 			if(identifier.equals("highest_group_chat_suffix") || identifier.equals("group_chat_suffix")) {
 				String suffix = "";
-				int weight = 999;
+				int weight = Integer.MAX_VALUE;
 				
 				for (PermissionGroup tmpGroup : user.getGroups()) {
 					if(tmpGroup.getWeight() < weight) {
@@ -107,7 +107,7 @@ public class PlaceHolderExpansion extends PlaceholderExpansion {
 					return user.getPrefix();
 				else {
 					String prefix = "";
-					int weight = 999;
+					int weight = Integer.MAX_VALUE;
 					
 					for (PermissionGroup tmpGroup : user.getGroups()) {
 						if(tmpGroup.getWeight() < weight) {
@@ -125,7 +125,7 @@ public class PlaceHolderExpansion extends PlaceholderExpansion {
 					return user.getSuffix();
 				else {
 					String suffix = "";
-					int weight = 999;
+					int weight = Integer.MAX_VALUE;
 					
 					for (PermissionGroup tmpGroup : user.getGroups()) {
 						if(tmpGroup.getWeight() < weight) {
@@ -143,7 +143,7 @@ public class PlaceHolderExpansion extends PlaceholderExpansion {
 					return user.getChatPrefix();
 				else {
 					String prefix = "";
-					int weight = 999;
+					int weight = Integer.MAX_VALUE;
 					
 					for (PermissionGroup tmpGroup : user.getGroups()) {
 						if(tmpGroup.getWeight() < weight) {
@@ -161,7 +161,7 @@ public class PlaceHolderExpansion extends PlaceholderExpansion {
 					return user.getChatSuffix();
 				else {
 					String suffix = "";
-					int weight = 999;
+					int weight = Integer.MAX_VALUE;
 					
 					for (PermissionGroup tmpGroup : user.getGroups()) {
 						if(tmpGroup.getWeight() < weight) {
