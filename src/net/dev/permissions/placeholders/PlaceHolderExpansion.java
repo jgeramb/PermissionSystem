@@ -1,8 +1,13 @@
 package net.dev.permissions.placeholders;
 
+import java.util.UUID;
+
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import net.dev.permissions.PermissionSystem;
+import net.dev.permissions.sql.MySQLPermissionManager;
+import net.dev.permissions.utils.*;
 import net.dev.permissions.utils.permissionmanagement.PermissionGroup;
 import net.dev.permissions.utils.permissionmanagement.PermissionUser;
 
@@ -18,8 +23,41 @@ public class PlaceHolderExpansion extends PlaceholderExpansion {
 	
 	@Override
 	public String onPlaceholderRequest(Player p, String identifier) {
+		PermissionSystem permissionSystem = PermissionSystem.getInstance();
+		Utils utils = permissionSystem.getUtils();
+		FileUtils fileUtils = permissionSystem.getFileUtils();
+		PermissionConfigUtils permissionConfigUtils = permissionSystem.getPermissionConfigUtils();
+		MySQLPermissionManager mysqlPermissionManager = permissionSystem.getMySQLPermissionManager();
+		
 		if(p != null) {
-			PermissionUser user = new PermissionUser(p.getUniqueId());
+			UUID uuid = p.getUniqueId();
+			PermissionUser user = new PermissionUser(uuid);
+			
+			if(identifier.equals("group_expiry")) {
+				String timedGroup = "NONE", formattedTime = "", group = "";
+				int weight = Integer.MAX_VALUE;
+				
+				for (PermissionGroup tmpGroup : user.getGroups()) {
+					if(tmpGroup.getWeight() < weight) {
+						group = tmpGroup.getName();
+						weight = tmpGroup.getWeight();
+					}
+				}
+				
+				if(fileUtils.getConfig().getBoolean("MySQL.Enabled")) {
+					String tempGroupName = mysqlPermissionManager.getPlayerTempGroupName(uuid.toString());
+					
+					if(tempGroupName != null) {
+						timedGroup = tempGroupName;
+						formattedTime = utils.formatTime((mysqlPermissionManager.getPlayerTempGroupTime(uuid.toString()) - System.currentTimeMillis()) / 1000);
+					}
+				} else if(permissionConfigUtils.getConfig().getStringList("TempRanks").contains(uuid.toString())) {
+					timedGroup = permissionConfigUtils.getConfig().getString("Ranks." + uuid.toString() + ".GroupName");
+					formattedTime = utils.formatTime((permissionConfigUtils.getConfig().getInt("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000);
+				}
+				
+				return ((formattedTime.isEmpty() || !(timedGroup.equals(group))) ? "NONE" : formattedTime);
+			}
 			
 			if(identifier.equals("highest_group") || identifier.equals("group")) {
 				String group = "";

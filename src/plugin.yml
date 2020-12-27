@@ -1,5 +1,5 @@
 name: PermissionSystem
-version: 4.3
+version: 4.4
 author: Justix
 main: net.dev.permissions.PermissionSystem
 soft-depend: [EazyNick, Clans, ClansAPI, PlaceholderAPI]

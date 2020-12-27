@@ -138,7 +138,7 @@ public class PermsCommand implements CommandExecutor {
 							}
 						} else if(permissionConfigUtils.getConfig().getStringList("TempRanks").contains(uuid.toString())) {
 							timedGroup = permissionConfigUtils.getConfig().getString("Ranks." + uuid.toString() + ".GroupName");
-							formattedTime = utils.formatTime(permissionConfigUtils.getConfig().getInt("Ranks." + uuid.toString() + ".Time"));
+							formattedTime = utils.formatTime((permissionConfigUtils.getConfig().getInt("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000);
 						}
 						
 						for (PermissionGroup group : permissionUser.getGroups())
