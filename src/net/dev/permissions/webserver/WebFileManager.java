@@ -1,24 +1,11 @@
 package net.dev.permissions.webserver;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
+import java.nio.file.*;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import org.bukkit.Bukkit;
 
@@ -26,9 +13,7 @@ import net.dev.permissions.PermissionSystem;
 import net.dev.permissions.utils.permissionmanagement.PermissionGroup;
 import net.dev.permissions.utils.permissionmanagement.PermissionUser;
 
-import lib.com.sun.net.httpserver.HttpExchange;
-import lib.com.sun.net.httpserver.HttpHandler;
-import lib.com.sun.net.httpserver.HttpServer;
+import lib.com.sun.net.httpserver.*;
 
 public class WebFileManager implements HttpHandler {
 

@@ -5,21 +5,15 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
 import net.dev.permissions.PermissionSystem;
-import net.dev.permissions.utils.FileUtils;
-import net.dev.permissions.utils.PermissionConfigUtils;
-import net.dev.permissions.utils.Utils;
+import net.dev.permissions.utils.*;
 import net.dev.permissions.utils.fetching.UUIDFetching;
-import net.dev.permissions.utils.permissionmanagement.PermissionGroup;
-import net.dev.permissions.utils.permissionmanagement.PermissionUser;
-import net.dev.permissions.utils.permissionmanagement.PermissionUserManager;
+import net.dev.permissions.utils.permissionmanagement.*;
 
 public class RankCommand implements CommandExecutor {
 

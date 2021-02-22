@@ -13,8 +13,6 @@ import net.dev.permissions.PermissionSystem;
 import net.dev.permissions.utils.permissionmanagement.PermissionGroup;
 import net.dev.permissions.utils.permissionmanagement.PermissionUser;
 
-import eu.neropvp.clans.Clans;
-
 public class TeamUtils {
 
 	private PermissionSystem permissionSystem;
@@ -69,27 +67,40 @@ public class TeamUtils {
 	
 	private void destroyTeam(String teamName) {
 		try {
-			packet = reflectUtils.getNMSClass("PacketPlayOutScoreboardTeam").getConstructor(new Class[0]).newInstance(new Object[0]);
+			packet = reflectUtils.getNMSClass("PacketPlayOutScoreboardTeam").getConstructor().newInstance();
 			
-			if(!(version.equalsIgnoreCase("v1_7_R4"))) {
-				boolean newVersion = Integer.parseInt(version.replace("v", "").split("_")[1]) > 12;
-				
-				try {
-					reflectUtils.setField(packet, "a", teamName);
-					reflectUtils.setField(packet, "b", newVersion ? getAsIChatBaseComponent(teamName) : teamName);
-					reflectUtils.setField(packet, "e", "ALWAYS");
-					reflectUtils.setField(packet, "h", 1);
-				} catch (Exception ex) {
-					reflectUtils.setField(packet, "a", teamName);
-					reflectUtils.setField(packet, "b", newVersion ? getAsIChatBaseComponent(teamName) : teamName);
-					reflectUtils.setField(packet, "e", "ALWAYS");
-					reflectUtils.setField(packet, "i", 1);
+			if(!(reflectUtils.getVersion().equalsIgnoreCase("v1_7_R4"))) {
+				if(reflectUtils.isNewVersion()) {
+					try {
+						reflectUtils.setField(packet, "a", teamName);
+						reflectUtils.setField(packet, "b", getAsIChatBaseComponent(teamName));
+						reflectUtils.setField(packet, "e", "ALWAYS");
+						reflectUtils.setField(packet, "i", 1);
+					} catch (Exception ex) {
+						reflectUtils.setField(packet, "a", teamName);
+						reflectUtils.setField(packet, "b", getAsIChatBaseComponent(teamName));
+						reflectUtils.setField(packet, "e", "ALWAYS");
+						reflectUtils.setField(packet, "j", 1);
+					}
+				} else {
+					try {
+						reflectUtils.setField(packet, "a", teamName);
+						reflectUtils.setField(packet, "b", teamName);
+						reflectUtils.setField(packet, "e", "ALWAYS");
+						reflectUtils.setField(packet, "h", 1);
+					} catch (Exception ex) {
+						reflectUtils.setField(packet, "a", teamName);
+						reflectUtils.setField(packet, "b", teamName);
+						reflectUtils.setField(packet, "e", "ALWAYS");
+						reflectUtils.setField(packet, "i", 1);
+					}
 				}
 			} else {
 				try {
 					reflectUtils.setField(packet, "a", teamName);
 					reflectUtils.setField(packet, "f", 1);
 				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
 			}
 			
@@ -102,28 +113,120 @@ public class TeamUtils {
 
 	private void createTeam(String teamName, String prefix, String suffix) {
 		try {
-			packet = reflectUtils.getNMSClass("PacketPlayOutScoreboardTeam").getConstructor(new Class[0]).newInstance(new Object[0]);
+			packet = reflectUtils.getNMSClass("PacketPlayOutScoreboardTeam").getConstructor().newInstance();
 			
-			if(!(version.equalsIgnoreCase("v1_7_R4"))) {
-				boolean newVersion = Integer.parseInt(version.replace("v", "").split("_")[1]) > 12;
-				
-				try {
-					reflectUtils.setField(packet, "a", teamName);
-					reflectUtils.setField(packet, "b", newVersion ? getAsIChatBaseComponent(teamName) : teamName);
-					reflectUtils.setField(packet, "c", newVersion ? getAsIChatBaseComponent(prefix) : prefix);
-					reflectUtils.setField(packet, "d", newVersion ? getAsIChatBaseComponent(suffix) : suffix);
-					reflectUtils.setField(packet, "e", "ALWAYS");
-					reflectUtils.setField(packet, "g", teamMembers.get(teamName));
-					reflectUtils.setField(packet, "h", 0);
-				} catch (Exception ex) {
-					reflectUtils.setField(packet, "a", teamName);
-					reflectUtils.setField(packet, "b", newVersion ? getAsIChatBaseComponent(teamName) : teamName);
-					reflectUtils.setField(packet, "c", newVersion ? getAsIChatBaseComponent(prefix) : prefix);
-					reflectUtils.setField(packet, "d", newVersion ? getAsIChatBaseComponent(suffix) : suffix);
-					reflectUtils.setField(packet, "e", "ALWAYS");
-					reflectUtils.setField(packet, "h", teamMembers.get(teamName));
-					reflectUtils.setField(packet, "i", 0);
-				} 
+			if(!(reflectUtils.getVersion().equalsIgnoreCase("v1_7_R4"))) {
+				if(reflectUtils.isNewVersion()) {
+					try {
+						reflectUtils.setField(packet, "a", teamName);
+						reflectUtils.setField(packet, "b", getAsIChatBaseComponent(teamName));
+						reflectUtils.setField(packet, "c", getAsIChatBaseComponent(prefix));
+						reflectUtils.setField(packet, "d", getAsIChatBaseComponent(suffix));
+						reflectUtils.setField(packet, "e", "ALWAYS");
+						reflectUtils.setField(packet, "g", teamMembers.get(teamName));
+						reflectUtils.setField(packet, "i", 0);
+					} catch (Exception ex) {
+						reflectUtils.setField(packet, "a", teamName);
+						reflectUtils.setField(packet, "b", getAsIChatBaseComponent(teamName));
+						reflectUtils.setField(packet, "c", getAsIChatBaseComponent(prefix));
+						reflectUtils.setField(packet, "d", getAsIChatBaseComponent(suffix));
+						reflectUtils.setField(packet, "e", "ALWAYS");
+						
+						String colorName = "RESET";
+						
+						if(prefix.length() > 1) {
+							for (int i = prefix.length() - 1; i >= 0; i--) {
+								if(i < (prefix.length() - 1)) {
+									if(prefix.charAt(i) == '§') {
+										char c = prefix.charAt(i + 1);
+										
+										if((c != 'k') && (c != 'l') && (c != 'm') && (c != 'n') && (c != 'o')) {
+											switch (c) {
+												case '0':
+													colorName = "BLACK";
+													break;
+												case '1':
+													colorName = "DARK_BLUE";
+													break;
+												case '2':
+													colorName = "DARK_GREEN";
+													break;
+												case '3':
+													colorName = "DARK_AQUA";
+													break;
+												case '4':
+													colorName = "DARK_RED";
+													break;
+												case '5':
+													colorName = "DARK_PURPLE";
+													break;
+												case '6':
+													colorName = "GOLD";
+													break;
+												case '7':
+													colorName = "GRAY";
+													break;
+												case '8':
+													colorName = "DARK_GRAY";
+													break;
+												case '9':
+													colorName = "BLUE";
+													break;
+												case 'a':
+													colorName = "GREEN";
+													break;
+												case 'b':
+													colorName = "AQUA";
+													break;
+												case 'c':
+													colorName = "RED";
+													break;
+												case 'd':
+													colorName = "LIGHT_PURPLE";
+													break;
+												case 'e':
+													colorName = "YELLOW";
+													break;
+												case 'f':
+													colorName = "WHITE";
+													break;
+												case 'r':
+													colorName = "RESET";
+													break;
+												default:
+													break;
+											}
+											
+											break;
+										}
+									}
+								}
+							}
+						}
+						
+						reflectUtils.setField(packet, "g", reflectUtils.getField(reflectUtils.getNMSClass("EnumChatFormat"), colorName).get(null));
+						reflectUtils.setField(packet, "h", teamMembers.get(teamName));
+						reflectUtils.setField(packet, "j", 0);
+					}
+				} else {
+					try {
+						reflectUtils.setField(packet, "a", teamName);
+						reflectUtils.setField(packet, "b", teamName);
+						reflectUtils.setField(packet, "c", prefix);
+						reflectUtils.setField(packet, "d", suffix);
+						reflectUtils.setField(packet, "e", "ALWAYS");
+						reflectUtils.setField(packet, "g", teamMembers.get(teamName));
+						reflectUtils.setField(packet, "h", 0);
+					} catch (Exception ex) {
+						reflectUtils.setField(packet, "a", teamName);
+						reflectUtils.setField(packet, "b", teamName);
+						reflectUtils.setField(packet, "c", prefix);
+						reflectUtils.setField(packet, "d", suffix);
+						reflectUtils.setField(packet, "e", "ALWAYS");
+						reflectUtils.setField(packet, "h", teamMembers.get(teamName));
+						reflectUtils.setField(packet, "i", 0);
+					}
+				}
 			} else {
 				reflectUtils.setField(packet, "a", teamName);
 				reflectUtils.setField(packet, "b", teamName);
@@ -171,14 +274,6 @@ public class TeamUtils {
 									
 									if(!(clanName.equals("-------NONE-------")))
 										clan = " §7[§e" + mysqlClanManager.getDisplayNameOfClan(clanName) + "§7]";
-								}
-								
-								if(permissionSystem.isClansInstalled()) {
-									eu.neropvp.clans.sql.MySQLClanManager mysqlClanManager = Clans.getInstance().getMySQLClanManager();
-									String clanName = mysqlClanManager.getClanOfUser(p.getUniqueId());
-									
-									if(!(clanName.equals("-------NONE-------")))
-										clan2 = "§7[§e" + mysqlClanManager.getDisplayNameOfClan(clanName) + "§7] ";
 								}
 								
 								if (permissionSystem.isEazyNickInstalled()) {

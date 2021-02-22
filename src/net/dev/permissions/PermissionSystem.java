@@ -1,17 +1,10 @@
 package net.dev.permissions;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
+import org.bukkit.command.*;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
@@ -22,33 +15,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.StringUtil;
 
 import net.dev.eazynick.api.NickManager;
-import net.dev.permissions.commands.DebugPermsCommand;
-import net.dev.permissions.commands.PermsCommand;
-import net.dev.permissions.commands.RankCommand;
-import net.dev.permissions.listeners.AsyncPlayerChatListener;
-import net.dev.permissions.listeners.PlayerChangedWorldListener;
-import net.dev.permissions.listeners.PlayerJoinListener;
-import net.dev.permissions.listeners.PlayerKickListener;
-import net.dev.permissions.listeners.PlayerQuitListener;
+import net.dev.permissions.commands.*;
+import net.dev.permissions.listeners.*;
 import net.dev.permissions.placeholders.PlaceHolderExpansion;
 import net.dev.permissions.sql.MySQL;
 import net.dev.permissions.sql.MySQLPermissionManager;
-import net.dev.permissions.utils.FileUtils;
-import net.dev.permissions.utils.ImportUtils;
-import net.dev.permissions.utils.PermissionConfigUtils;
-import net.dev.permissions.utils.Utils;
-import net.dev.permissions.utils.fetching.UUIDFetcher;
-import net.dev.permissions.utils.fetching.UUIDFetcher_1_7;
-import net.dev.permissions.utils.fetching.UUIDFetcher_1_8_R1;
-import net.dev.permissions.utils.fetching.UUIDFetching;
-import net.dev.permissions.utils.permissionmanagement.PermissionGroup;
-import net.dev.permissions.utils.permissionmanagement.PermissionGroupManager;
-import net.dev.permissions.utils.permissionmanagement.PermissionManager;
-import net.dev.permissions.utils.permissionmanagement.PermissionUser;
-import net.dev.permissions.utils.permissionmanagement.PermissionUserManager;
-import net.dev.permissions.utils.reflect.PermissibleBaseOverride;
-import net.dev.permissions.utils.reflect.ReflectUtils;
-import net.dev.permissions.utils.reflect.TeamUtils;
+import net.dev.permissions.utils.*;
+import net.dev.permissions.utils.fetching.*;
+import net.dev.permissions.utils.permissionmanagement.*;
+import net.dev.permissions.utils.reflect.*;
 import net.dev.permissions.webserver.WebFileManager;
 import net.dev.permissions.webserver.WebServerManager;
 
@@ -431,10 +406,6 @@ public class PermissionSystem extends JavaPlugin {
 		Plugin plugin = Bukkit.getPluginManager().getPlugin("EazyNick");
 		
 		return ((plugin != null) && plugin.isEnabled());
-	}
-	
-	public boolean isClansInstalled() {
-		return (Bukkit.getPluginManager().getPlugin("Clans") != null);
 	}
 	
 	public boolean isClansAPIInstalled() {

@@ -4,24 +4,16 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
 import net.dev.permissions.PermissionSystem;
 import net.dev.permissions.sql.MySQLPermissionManager;
-import net.dev.permissions.utils.FileUtils;
-import net.dev.permissions.utils.ImportUtils;
-import net.dev.permissions.utils.PermissionConfigUtils;
-import net.dev.permissions.utils.Utils;
+import net.dev.permissions.utils.*;
 import net.dev.permissions.utils.fetching.UUIDFetching;
-import net.dev.permissions.utils.permissionmanagement.PermissionGroup;
-import net.dev.permissions.utils.permissionmanagement.PermissionGroupManager;
-import net.dev.permissions.utils.permissionmanagement.PermissionUser;
-import net.dev.permissions.utils.permissionmanagement.PermissionUserManager;
+import net.dev.permissions.utils.permissionmanagement.*;
 import net.dev.permissions.webserver.WebServerManager;
 
 public class PermsCommand implements CommandExecutor {
@@ -138,7 +130,7 @@ public class PermsCommand implements CommandExecutor {
 							}
 						} else if(permissionConfigUtils.getConfig().getStringList("TempRanks").contains(uuid.toString())) {
 							timedGroup = permissionConfigUtils.getConfig().getString("Ranks." + uuid.toString() + ".GroupName");
-							formattedTime = utils.formatTime((permissionConfigUtils.getConfig().getInt("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000);
+							formattedTime = utils.formatTime((permissionConfigUtils.getConfig().getLong("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000);
 						}
 						
 						for (PermissionGroup group : permissionUser.getGroups())
@@ -654,7 +646,7 @@ public class PermsCommand implements CommandExecutor {
 						}
 					} else if(permissionConfigUtils.getConfig().getStringList("TempRanks").contains(uuid.toString())) {
 						timedGroup = permissionConfigUtils.getConfig().getString("Ranks." + uuid.toString() + ".GroupName");
-						formattedTime = utils.formatTime((permissionConfigUtils.getConfig().getInt("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000);
+						formattedTime = utils.formatTime((permissionConfigUtils.getConfig().getLong("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000);
 					}
 					
 					for (PermissionGroup group : permissionUser.getGroups())

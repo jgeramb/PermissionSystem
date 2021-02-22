@@ -1,13 +1,7 @@
 package net.dev.permissions.sql;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
+import java.sql.*;
+import java.util.concurrent.*;
 
 public class MySQL {
 

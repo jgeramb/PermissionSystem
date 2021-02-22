@@ -25,9 +25,7 @@
 
 package lib.sun.net.httpserver;
 
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 /**
  * a (filter) input stream which can tell us if bytes are "left over"

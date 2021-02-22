@@ -5,10 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
-import org.bukkit.permissions.PermissibleBase;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionAttachmentInfo;
-import org.bukkit.permissions.ServerOperator;
+import org.bukkit.permissions.*;
 
 public class PermissibleBaseOverride extends PermissibleBase {
 

@@ -2,9 +2,7 @@ package net.dev.permissions.sql;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class MySQLPermissionManager {
 
@@ -187,7 +185,7 @@ public class MySQLPermissionManager {
 	public void setPlayerTempGroup(String uuid, String groupName, long time) {
 		if(mysql.isConnected()) {
 			if(isUUIDInCache(uuid))
-				mysql.update("UPDATE PermissionUsers SET temp_group_name = '" + groupName + "', temp_group_time = '" + time + "' WHERE UUID = '" + uuid + "'");
+				mysql.update("UPDATE PermissionUsers SET temp_group_name = " + ((groupName != null) ? ("'" + groupName + "'") : "NULL") + ", temp_group_time = " + time + " WHERE UUID = '" + uuid + "'");
 		}
 		
 		if(values.containsKey(SQLProperty.USER_TEMP_GROUP_NAME))

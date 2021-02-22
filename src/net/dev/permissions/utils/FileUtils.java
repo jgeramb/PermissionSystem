@@ -44,7 +44,7 @@ public class FileUtils {
 		cfg.addDefault("Settings.ChatFormat", "%prefix%%name%%suffix%&7: &f%message%");
 		cfg.addDefault("Settings.UsePrefixesAndSuffixes", true);
 		cfg.addDefault("Settings.RankKick", true);
-		cfg.addDefault("Settings.RankKickMessage", "%prefix%\n\n&7You received the rank &3%rankName% &7from the player &e%rankSetter%\n&7Expiry&8: &3%expiryTime%");
+		cfg.addDefault("Settings.RankKickMessage", "&7You received the rank &3%rankName% &7from the player &e%rankSetter%\n&7Expiry&8: &3%expiryTime%");
 		cfg.addDefault("Settings.RankKickExpiryFormat", "%years% years %months% months %days% days %hours% hours %minutes% minutes %seconds% seconds");
 		cfg.addDefault("Settings.RankKickExpiryNever", "&c&lNever");
 		cfg.addDefault("MySQL.Enabled", false);

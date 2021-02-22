@@ -1,9 +1,6 @@
 package net.dev.permissions.utils.permissionmanagement;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -12,9 +9,7 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import net.dev.permissions.PermissionSystem;
 import net.dev.permissions.sql.MySQLPermissionManager;
-import net.dev.permissions.utils.FileUtils;
-import net.dev.permissions.utils.PermissionConfigUtils;
-import net.dev.permissions.utils.Utils;
+import net.dev.permissions.utils.*;
 import net.dev.permissions.utils.fetching.UUIDFetching;
 
 public class PermissionUser {

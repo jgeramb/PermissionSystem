@@ -53,7 +53,7 @@ public class PlaceHolderExpansion extends PlaceholderExpansion {
 					}
 				} else if(permissionConfigUtils.getConfig().getStringList("TempRanks").contains(uuid.toString())) {
 					timedGroup = permissionConfigUtils.getConfig().getString("Ranks." + uuid.toString() + ".GroupName");
-					formattedTime = utils.formatTime((permissionConfigUtils.getConfig().getInt("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000);
+					formattedTime = utils.formatTime((permissionConfigUtils.getConfig().getLong("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000);
 				}
 				
 				return ((formattedTime.isEmpty() || !(timedGroup.equals(group))) ? "NONE" : formattedTime);

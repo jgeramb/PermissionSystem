@@ -25,15 +25,11 @@
 
 package lib.sun.net.httpserver;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URI;
 
-import lib.com.sun.net.httpserver.Headers;
-import lib.com.sun.net.httpserver.HttpExchange;
-import lib.com.sun.net.httpserver.HttpPrincipal;
+import lib.com.sun.net.httpserver.*;
 
 class HttpExchangeImpl extends HttpExchange {
 

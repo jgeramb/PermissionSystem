@@ -25,12 +25,7 @@
 
 package lib.com.sun.net.httpserver;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * HTTP request and response headers are represented by this class which implements

@@ -28,9 +28,7 @@ package lib.sun.net.httpserver;
 import java.io.IOException;
 import java.io.InputStream;
 
-import lib.com.sun.net.httpserver.Authenticator;
-import lib.com.sun.net.httpserver.Filter;
-import lib.com.sun.net.httpserver.HttpExchange;
+import lib.com.sun.net.httpserver.*;
 
 public class AuthFilter extends Filter {
 

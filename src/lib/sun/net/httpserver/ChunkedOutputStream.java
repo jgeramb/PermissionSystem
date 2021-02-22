@@ -25,9 +25,7 @@
 
 package lib.sun.net.httpserver;
 
-import java.io.FilterOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 
 /**
  * a class which allows the caller to write an arbitrary

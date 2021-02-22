@@ -25,30 +25,12 @@
 
 package lib.sun.net.httpserver;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.BindException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.channels.CancelledKeyException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.io.*;
+import java.net.*;
+import java.nio.channels.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,14 +38,7 @@ import java.util.logging.Logger;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
-import lib.com.sun.net.httpserver.Filter;
-import lib.com.sun.net.httpserver.Headers;
-import lib.com.sun.net.httpserver.HttpContext;
-import lib.com.sun.net.httpserver.HttpExchange;
-import lib.com.sun.net.httpserver.HttpHandler;
-import lib.com.sun.net.httpserver.HttpServer;
-import lib.com.sun.net.httpserver.HttpsConfigurator;
-
+import lib.com.sun.net.httpserver.*;
 import lib.sun.net.httpserver.HttpConnection.State;
 
 /**
