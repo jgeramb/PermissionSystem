@@ -1,7 +1,6 @@
 package net.dev.permissions.utils.reflect;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 
 import org.bukkit.Bukkit;
 
@@ -35,13 +34,10 @@ public class ReflectUtils {
 	public Field getField(Class<?> clazz, String fieldName) {
 		try {
 			Field f = clazz.getDeclaredField(fieldName);
-			Field modifiers = f.getClass().getDeclaredField("modifiers");
 			f.setAccessible(true);
-			modifiers.setAccessible(true);
-			modifiers.setInt(f, f.getModifiers() & ~Modifier.FINAL);
 			
 			return f;
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException e) {
 			e.printStackTrace();
 			
 			return null;
