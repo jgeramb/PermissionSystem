@@ -69,7 +69,7 @@ public class PermissionSystem extends JavaPlugin {
 		permissionGroupManager = new PermissionGroupManager();
 		permissionUserManager = new PermissionUserManager();
 		permissionManager = new PermissionManager();
-		
+
 		String version = reflectUtils.getVersion();
 		
 		if(version.equals("v1_7_R4"))
@@ -296,6 +296,13 @@ public class PermissionSystem extends JavaPlugin {
 		
 		if(webServerManager != null)
 			webServerManager.stop();
+		
+		if (fileUtils.getConfig().getBoolean("Settings.UsePrefixesAndSuffixes")) {
+			for (String team : teamUtils.getTeamMembers().keySet()) {
+				if (team != null)
+					teamUtils.destroyTeam(team);
+			}
+		}
 		
 		permissionConfigUtils.saveFile();
 		

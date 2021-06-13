@@ -1,6 +1,8 @@
 package net.dev.permissions.utils.reflect;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 import org.bukkit.Bukkit;
 
@@ -31,6 +33,15 @@ public class ReflectUtils {
 		return null;
 	}
 	
+	public Class<?> getSubClass(Class<?> clazz, String className) {
+		for(Class<?> subClazz : clazz.getDeclaredClasses()) {
+			if(subClazz.getSimpleName().equals(className))
+				return subClazz;
+		}
+		
+		return null;
+	}
+	
 	public Field getField(Class<?> clazz, String fieldName) {
 		try {
 			Field f = clazz.getDeclaredField(fieldName);
@@ -46,7 +57,7 @@ public class ReflectUtils {
 
 	public Class<?> getNMSClass(String className) {
 		try {
-			return Class.forName("net.minecraft.server." + getVersion() + "." + className);
+			return Class.forName(getVersion().startsWith("v1_17") ? ("net.minecraft." + className) : ("net.minecraft.server." + getVersion() + "." + className));
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -70,6 +81,50 @@ public class ReflectUtils {
 	
 	public boolean isNewVersion() {
 		return (Integer.parseInt(getVersion().substring(1).split("_")[1]) > 12);
+	}
+	
+	public void debugObject(Object obj) {
+		Class<?> clazz = obj.getClass();
+		
+		System.out.println();
+		System.out.println("Class info of \"" + clazz.getSimpleName() + "\":");
+		System.out.println("» Constructors:");
+		
+		for (Constructor<?> currentConstructor : clazz.getDeclaredConstructors())
+			System.out.println("--> " + Arrays.toString(currentConstructor.getParameterTypes()));
+		
+		System.out.println("» Fields:");
+		
+		for (Field currentField : clazz.getDeclaredFields()) {
+			try {
+				currentField.setAccessible(true);
+				
+				System.out.println("--> " + currentField.getType().getSimpleName() + " " + currentField.getName() + ": " + currentField.get(obj));
+			} catch (Exception ex) {
+				System.out.println("--> " + currentField.getType().getSimpleName() + " " + currentField.getName() + ": ERROR (" + ex.getMessage() + ")");
+			}
+		}
+	}
+	
+	public void debugClass(Class<?> clazz) {
+		System.out.println();
+		System.out.println("Class info of \"" + clazz.getSimpleName() + "\":");
+		System.out.println("» Constructors:");
+		
+		for (Constructor<?> currentConstructor : clazz.getDeclaredConstructors())
+			System.out.println("--> " + Arrays.toString(currentConstructor.getParameterTypes()));
+		
+		System.out.println("» Fields:");
+		
+		for (Field currentField : clazz.getDeclaredFields()) {
+			try {
+				currentField.setAccessible(true);
+				
+				System.out.println("--> " + currentField.getType().getSimpleName() + " " + currentField.getName());
+			} catch (Exception ex) {
+				System.out.println("--> " + currentField.getType().getSimpleName() + " " + currentField.getName() + ": ERROR (" + ex.getMessage() + ")");
+			}
+		}
 	}
 	
 }

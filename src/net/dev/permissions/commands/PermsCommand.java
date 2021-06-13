@@ -15,6 +15,8 @@ import net.dev.permissions.utils.*;
 import net.dev.permissions.utils.fetching.UUIDFetching;
 import net.dev.permissions.utils.permissionmanagement.*;
 import net.dev.permissions.webserver.WebServerManager;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 
 public class PermsCommand implements CommandExecutor {
 
@@ -65,9 +67,15 @@ public class PermsCommand implements CommandExecutor {
 						
 						p.sendMessage(prefix + "§eThe config files were reloaded§7!");
 					} else if(args[0].equalsIgnoreCase("editor")) {
-						if(fileUtils.getConfig().getBoolean("WebServer.Enabled") && (webServerManager != null))
-							p.sendMessage(prefix + "§eClick on the link to get to the web editor§8: §ahttp://" + utils.getIpAddress() + ":" + fileUtils.getConfig().getInt("WebServer.Port") + "?authKey=" + webServerManager.getAuthKey());
-						else
+						if(fileUtils.getConfig().getBoolean("WebServer.Enabled") && (webServerManager != null)) {
+							String url = "http://" + utils.getIpAddress() + ":" + fileUtils.getConfig().getInt("WebServer.Port") + "?authKey=" + webServerManager.getAuthKey();
+							TextComponent base = new TextComponent(prefix + "§eClick on the link to get to the web editor§8: ");
+							TextComponent clickable = new TextComponent("§a" + url);
+							clickable.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+							base.addExtra(clickable);
+							
+							p.spigot().sendMessage(base);
+						} else
 							p.sendMessage(prefix + "§cThe web server is not enabled or not running§7!");
 					} else
 						utils.sendHelpMessage(p);

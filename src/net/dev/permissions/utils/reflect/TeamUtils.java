@@ -1,7 +1,7 @@
 package net.dev.permissions.utils.reflect;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.lang.reflect.Constructor;
+import java.util.*;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -25,6 +25,7 @@ public class TeamUtils {
 	private HashMap<String, String> teamSuffixesChat = new HashMap<>();
 	private HashMap<String, String> teamPrefixesPlayerList = new HashMap<>();
 	private HashMap<String, String> teamSuffixesPlayerList = new HashMap<>();
+	private ArrayList<Player> packetReceived = new ArrayList();
 	private Object packet;
 	private String version;
 	
@@ -65,9 +66,14 @@ public class TeamUtils {
 		return new ArrayList<>(groupNames.values()).get(0);
 	}
 	
-	private void destroyTeam(String teamName) {
+	public void destroyTeam(String teamName) {
 		try {
-			packet = reflectUtils.getNMSClass("PacketPlayOutScoreboardTeam").getConstructor().newInstance();
+			boolean is17 = reflectUtils.getVersion().startsWith("v1_17");
+			
+			Constructor<?> constructor = reflectUtils.getNMSClass(is17 ? "network.protocol.game.PacketPlayOutScoreboardTeam" : "PacketPlayOutScoreboardTeam").getDeclaredConstructor(is17 ? new Class[] { String.class, int.class, Optional.class, Collection.class } : new Class[0]);
+			constructor.setAccessible(true);
+			
+			packet = constructor.newInstance(is17 ? new Object[] { null, 0, null, new ArrayList<>() } : new Object[0]);
 			
 			if(!(reflectUtils.getVersion().equalsIgnoreCase("v1_7_R4"))) {
 				if(reflectUtils.isNewVersion()) {
@@ -77,10 +83,20 @@ public class TeamUtils {
 						reflectUtils.setField(packet, "e", "ALWAYS");
 						reflectUtils.setField(packet, "i", 1);
 					} catch (Exception ex) {
-						reflectUtils.setField(packet, "a", teamName);
-						reflectUtils.setField(packet, "b", getAsIChatBaseComponent(teamName));
-						reflectUtils.setField(packet, "e", "ALWAYS");
-						reflectUtils.setField(packet, "j", 1);
+						if(is17) {
+							reflectUtils.setField(packet, "h", 1);
+							reflectUtils.setField(packet, "i", teamName);
+							
+							Object scoreboardTeam = reflectUtils.getNMSClass("world.scores.ScoreboardTeam").getConstructor(reflectUtils.getNMSClass("world.scores.Scoreboard"), String.class).newInstance(null, teamName);
+							reflectUtils.setField(scoreboardTeam, "e", teamName);
+							
+							reflectUtils.setField(packet, "k", Optional.of(reflectUtils.getSubClass(packet.getClass(), "b").getConstructor(scoreboardTeam.getClass()).newInstance(scoreboardTeam)));
+						} else {
+							reflectUtils.setField(packet, "a", teamName);
+							reflectUtils.setField(packet, "b", getAsIChatBaseComponent(teamName));
+							reflectUtils.setField(packet, "e", "ALWAYS");
+							reflectUtils.setField(packet, "j", 1);
+						}
 					}
 				} else {
 					try {
@@ -104,8 +120,7 @@ public class TeamUtils {
 				}
 			}
 			
-			for(Player t : Bukkit.getOnlinePlayers())
-				sendPacket(t, packet);
+			Bukkit.getOnlinePlayers().stream().filter(packetReceived::contains).forEach(currentPlayer -> sendPacket(currentPlayer, packet));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -113,7 +128,12 @@ public class TeamUtils {
 
 	private void createTeam(String teamName, String prefix, String suffix) {
 		try {
-			packet = reflectUtils.getNMSClass("PacketPlayOutScoreboardTeam").getConstructor().newInstance();
+			boolean is17 = reflectUtils.getVersion().startsWith("v1_17");
+			
+			Constructor<?> constructor = reflectUtils.getNMSClass(is17 ? "network.protocol.game.PacketPlayOutScoreboardTeam" : "PacketPlayOutScoreboardTeam").getDeclaredConstructor(is17 ? new Class[] { String.class, int.class, Optional.class, Collection.class } : new Class[0]);
+			constructor.setAccessible(true);
+			
+			packet = constructor.newInstance(is17 ? new Object[] { null, 0, null, new ArrayList<>() } : new Object[0]);
 			
 			if(!(reflectUtils.getVersion().equalsIgnoreCase("v1_7_R4"))) {
 				if(reflectUtils.isNewVersion()) {
@@ -126,13 +146,7 @@ public class TeamUtils {
 						reflectUtils.setField(packet, "g", teamMembers.get(teamName));
 						reflectUtils.setField(packet, "i", 0);
 					} catch (Exception ex) {
-						reflectUtils.setField(packet, "a", teamName);
-						reflectUtils.setField(packet, "b", getAsIChatBaseComponent(teamName));
-						reflectUtils.setField(packet, "c", getAsIChatBaseComponent(prefix));
-						reflectUtils.setField(packet, "d", getAsIChatBaseComponent(suffix));
-						reflectUtils.setField(packet, "e", "ALWAYS");
-						
-						String colorName = "RESET";
+						String colorName = is17 ? "v" : "RESET";
 						
 						if(prefix.length() > 1) {
 							for (int i = prefix.length() - 1; i >= 0; i--) {
@@ -143,55 +157,55 @@ public class TeamUtils {
 										if((c != 'k') && (c != 'l') && (c != 'm') && (c != 'n') && (c != 'o')) {
 											switch (c) {
 												case '0':
-													colorName = "BLACK";
+													colorName = is17 ? "a" : "BLACK";
 													break;
 												case '1':
-													colorName = "DARK_BLUE";
+													colorName = is17 ? "b" : "DARK_BLUE";
 													break;
 												case '2':
-													colorName = "DARK_GREEN";
+													colorName = is17 ? "c" : "DARK_GREEN";
 													break;
 												case '3':
-													colorName = "DARK_AQUA";
+													colorName = is17 ? "d" : "DARK_AQUA";
 													break;
 												case '4':
-													colorName = "DARK_RED";
+													colorName = is17 ? "e" : "DARK_RED";
 													break;
 												case '5':
-													colorName = "DARK_PURPLE";
+													colorName = is17 ? "f" : "DARK_PURPLE";
 													break;
 												case '6':
-													colorName = "GOLD";
+													colorName = is17 ? "g" : "GOLD";
 													break;
 												case '7':
-													colorName = "GRAY";
+													colorName = is17 ? "h" : "GRAY";
 													break;
 												case '8':
-													colorName = "DARK_GRAY";
+													colorName = is17 ? "i" : "DARK_GRAY";
 													break;
 												case '9':
-													colorName = "BLUE";
+													colorName = is17 ? "j" : "BLUE";
 													break;
 												case 'a':
-													colorName = "GREEN";
+													colorName = is17 ? "k" : "GREEN";
 													break;
 												case 'b':
-													colorName = "AQUA";
+													colorName = is17 ? "l" : "AQUA";
 													break;
 												case 'c':
-													colorName = "RED";
+													colorName = is17 ? "m" : "RED";
 													break;
 												case 'd':
-													colorName = "LIGHT_PURPLE";
+													colorName = is17 ? "n" : "LIGHT_PURPLE";
 													break;
 												case 'e':
-													colorName = "YELLOW";
+													colorName = is17 ? "o" : "YELLOW";
 													break;
 												case 'f':
-													colorName = "WHITE";
+													colorName = is17 ? "p" : "WHITE";
 													break;
 												case 'r':
-													colorName = "RESET";
+													colorName = is17 ? "v" : "RESET";
 													break;
 												default:
 													break;
@@ -204,9 +218,30 @@ public class TeamUtils {
 							}
 						}
 						
-						reflectUtils.setField(packet, "g", reflectUtils.getField(reflectUtils.getNMSClass("EnumChatFormat"), colorName).get(null));
-						reflectUtils.setField(packet, "h", teamMembers.get(teamName));
-						reflectUtils.setField(packet, "j", 0);
+						if(is17) {
+							reflectUtils.setField(packet, "h", 0);
+							reflectUtils.setField(packet, "i", teamName);
+							reflectUtils.setField(packet, "j", teamMembers.get(teamName));
+							
+							Object scoreboardTeam = reflectUtils.getNMSClass("world.scores.ScoreboardTeam").getConstructor(reflectUtils.getNMSClass("world.scores.Scoreboard"), String.class).newInstance(null, teamName);
+							reflectUtils.setField(scoreboardTeam, "e", teamName);
+							reflectUtils.setField(scoreboardTeam, "h", getAsIChatBaseComponent(prefix));							
+							reflectUtils.setField(scoreboardTeam, "i", getAsIChatBaseComponent(suffix));							
+							reflectUtils.setField(scoreboardTeam, "j", false);							
+							reflectUtils.setField(scoreboardTeam, "k", false);							
+							reflectUtils.setField(scoreboardTeam, "n", reflectUtils.getField(reflectUtils.getNMSClass("EnumChatFormat"), colorName).get(null));
+							
+							reflectUtils.setField(packet, "k", Optional.of(reflectUtils.getSubClass(packet.getClass(), "b").getConstructor(scoreboardTeam.getClass()).newInstance(scoreboardTeam)));
+						} else {
+							reflectUtils.setField(packet, "a", teamName);
+							reflectUtils.setField(packet, "b", getAsIChatBaseComponent(teamName));
+							reflectUtils.setField(packet, "c", getAsIChatBaseComponent(prefix));
+							reflectUtils.setField(packet, "d", getAsIChatBaseComponent(suffix));
+							reflectUtils.setField(packet, "e", "ALWAYS");
+							reflectUtils.setField(packet, "g", reflectUtils.getField(reflectUtils.getNMSClass("EnumChatFormat"), colorName).get(null));
+							reflectUtils.setField(packet, "h", teamMembers.get(teamName));
+							reflectUtils.setField(packet, "j", 0);
+						}
 					}
 				} else {
 					try {
@@ -237,8 +272,11 @@ public class TeamUtils {
 				reflectUtils.setField(packet, "g", 0);
 			}
 			
-			for(Player t : Bukkit.getOnlinePlayers())
-				sendPacket(t, packet);
+			Bukkit.getOnlinePlayers().forEach(currentPlayer -> {
+				sendPacket(currentPlayer, packet);
+				
+				packetReceived.add(currentPlayer);
+			});
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -246,7 +284,7 @@ public class TeamUtils {
 	
 	private Object getAsIChatBaseComponent(String text) {
 		try {
-			return reflectUtils.getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", String.class).invoke(null, "{\"text\":\"" + text + "\"}");
+			return reflectUtils.getNMSClass(reflectUtils.getVersion().startsWith("v1_17") ? "network.chat.IChatBaseComponent" : "IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", String.class).invoke(null, "{\"text\":\"" + text + "\"}");
 		} catch (Exception e) {
 			return null;
 		}
@@ -315,10 +353,12 @@ public class TeamUtils {
 	}
 
 	private void sendPacket(Player p, Object packet) {
+		boolean is17 = reflectUtils.getVersion().startsWith("v1_17");
+		
 		try {
 			Object playerHandle = p.getClass().getMethod("getHandle", new Class[0]).invoke(p, new Object[0]);
-			Object playerConnection = playerHandle.getClass().getField("playerConnection").get(playerHandle);
-			playerConnection.getClass().getMethod("sendPacket", new Class[] { reflectUtils.getNMSClass("Packet") }).invoke(playerConnection, new Object[] { packet });
+			Object playerConnection = playerHandle.getClass().getField(is17 ? "b" : "playerConnection").get(playerHandle);
+			playerConnection.getClass().getMethod("sendPacket", new Class[] { reflectUtils.getNMSClass(is17 ? "network.protocol.Packet" : "Packet") }).invoke(playerConnection, new Object[] { packet });
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
