@@ -93,7 +93,7 @@ public class RankCommand implements CommandExecutor {
 							permissionGroup.addMember(name, true);
 							
 							if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
-								permissionSystem.getMySQLPermissionManager().setPlayerTempGroup(uuid.toString(), permissionGroup.getName(), System.currentTimeMillis() + (time * 1000));
+								permissionSystem.getMySQLPermissionManager().setPlayerTempGroup(uuid.toString(), permissionGroup.getName(), System.currentTimeMillis() + (time * 1000L));
 							else {
 								List<String> ranks = permissionConfigUtils.getConfig().getStringList("TempRanks");
 								
@@ -102,7 +102,7 @@ public class RankCommand implements CommandExecutor {
 								
 								permissionConfigUtils.getConfig().set("TempRanks", ranks);
 								permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".GroupName", permissionGroup.getName());
-								permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".Time", System.currentTimeMillis() + (time * 1000));
+								permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".Time", System.currentTimeMillis() + (time * 1000L));
 								permissionConfigUtils.saveFile();
 							}
 							

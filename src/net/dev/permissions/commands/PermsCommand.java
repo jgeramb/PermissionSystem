@@ -134,11 +134,11 @@ public class PermsCommand implements CommandExecutor {
 							
 							if(tempGroupName != null) {
 								timedGroup = tempGroupName;
-								formattedTime = utils.formatTime((mysqlPermissionManager.getPlayerTempGroupTime(uuid.toString()) - System.currentTimeMillis()) / 1000);
+								formattedTime = utils.formatTime((mysqlPermissionManager.getPlayerTempGroupTime(uuid.toString()) - System.currentTimeMillis()) / 1000L);
 							}
 						} else if(permissionConfigUtils.getConfig().getStringList("TempRanks").contains(uuid.toString())) {
 							timedGroup = permissionConfigUtils.getConfig().getString("Ranks." + uuid.toString() + ".GroupName");
-							formattedTime = utils.formatTime((permissionConfigUtils.getConfig().getLong("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000);
+							formattedTime = utils.formatTime((permissionConfigUtils.getConfig().getLong("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000L);
 						}
 						
 						for (PermissionGroup group : permissionUser.getGroups())
@@ -462,7 +462,7 @@ public class PermsCommand implements CommandExecutor {
 											UUID uuid = uuidFetching.fetchUUID(name);
 											
 											if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
-												permissionSystem.getMySQLPermissionManager().setPlayerTempGroup(uuid.toString(), permissionGroup.getName(), System.currentTimeMillis() + (time * 1000));
+												permissionSystem.getMySQLPermissionManager().setPlayerTempGroup(uuid.toString(), permissionGroup.getName(), System.currentTimeMillis() + (time * 1000L));
 											else {
 												List<String> ranks = permissionConfigUtils.getConfig().getStringList("TempRanks");
 												
@@ -471,7 +471,7 @@ public class PermsCommand implements CommandExecutor {
 												
 												permissionConfigUtils.getConfig().set("TempRanks", ranks);
 												permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".GroupName", permissionGroup.getName());
-												permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".Time", System.currentTimeMillis() + (time * 1000));
+												permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".Time", System.currentTimeMillis() + (time * 1000L));
 												permissionConfigUtils.saveFile();
 											}
 											
@@ -650,11 +650,11 @@ public class PermsCommand implements CommandExecutor {
 						
 						if(tempGroupName != null) {
 							timedGroup = tempGroupName;
-							formattedTime = utils.formatTime((mysqlPermissionManager.getPlayerTempGroupTime(uuid.toString()) - System.currentTimeMillis()) / 1000);
+							formattedTime = utils.formatTime((mysqlPermissionManager.getPlayerTempGroupTime(uuid.toString()) - System.currentTimeMillis()) / 1000L);
 						}
 					} else if(permissionConfigUtils.getConfig().getStringList("TempRanks").contains(uuid.toString())) {
 						timedGroup = permissionConfigUtils.getConfig().getString("Ranks." + uuid.toString() + ".GroupName");
-						formattedTime = utils.formatTime((permissionConfigUtils.getConfig().getLong("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000);
+						formattedTime = utils.formatTime((permissionConfigUtils.getConfig().getLong("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000L);
 					}
 					
 					for (PermissionGroup group : permissionUser.getGroups())
@@ -981,7 +981,7 @@ public class PermsCommand implements CommandExecutor {
 										UUID uuid = uuidFetching.fetchUUID(name);
 										
 										if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
-											permissionSystem.getMySQLPermissionManager().setPlayerTempGroup(uuid.toString(), permissionGroup.getName(), System.currentTimeMillis() + (time * 1000));
+											permissionSystem.getMySQLPermissionManager().setPlayerTempGroup(uuid.toString(), permissionGroup.getName(), System.currentTimeMillis() + (time * 1000L));
 										else {
 											List<String> ranks = permissionConfigUtils.getConfig().getStringList("TempRanks");
 											
@@ -990,7 +990,7 @@ public class PermsCommand implements CommandExecutor {
 											
 											permissionConfigUtils.getConfig().set("TempRanks", ranks);
 											permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".GroupName", permissionGroup.getName());
-											permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".Time", System.currentTimeMillis() + (time * 1000));
+											permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".Time", System.currentTimeMillis() + (time * 1000L));
 											permissionConfigUtils.saveFile();
 										}
 										

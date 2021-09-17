@@ -282,14 +282,6 @@ public class TeamUtils {
 		}
 	}
 	
-	private Object getAsIChatBaseComponent(String text) {
-		try {
-			return reflectUtils.getNMSClass(reflectUtils.getVersion().startsWith("v1_17") ? "network.chat.IChatBaseComponent" : "IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", String.class).invoke(null, "{\"text\":\"" + text + "\"}");
-		} catch (Exception e) {
-			return null;
-		}
-	}
-
 	public void updateTeams() {
 		if (teamMembers.size() >= 1) {
 			for (String team : teamMembers.keySet()) {
@@ -349,6 +341,14 @@ public class TeamUtils {
 		for (String teamName : teamMembers.keySet()) {
 			if (teamMembers.get(teamName).contains(playerName))
 				teamMembers.get(teamName).remove(playerName);
+		}
+	}
+	
+	private Object getAsIChatBaseComponent(String text) {
+		try {
+			return reflectUtils.getNMSClass(reflectUtils.getVersion().startsWith("v1_17") ? "network.chat.IChatBaseComponent" : "IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", String.class).invoke(null, "{\"text\":\"" + text + "\"}");
+		} catch (Exception e) {
+			return null;
 		}
 	}
 
