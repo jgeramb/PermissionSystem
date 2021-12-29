@@ -1,4 +1,4 @@
-package net.dev.permissions.utils;
+package net.dev.permissions.utilities;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -12,7 +12,7 @@ import org.bukkit.permissions.PermissionAttachment;
 
 import net.dev.permissions.PermissionSystem;
 
-public class Utils {
+public class Utilities {
 
 	private String prefix, noPerm;
 	private HashMap<UUID, PermissionAttachment> attachments = new HashMap<>();

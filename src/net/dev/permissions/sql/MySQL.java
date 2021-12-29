@@ -2,17 +2,20 @@ package net.dev.permissions.sql;
 
 import java.sql.*;
 import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.bukkit.Bukkit;
 
 public class MySQL {
 
-	public Connection con;
-	public String host;
-	public String port;
-	public String database;
-	public String username;
-	public String password;
+	private Logger logger;
+	private Connection connection;
+	private String host, port, database, username, password;
+	private final String PREFIX = "[MySQL] ";
 	
 	public MySQL(String host, String port, String database, String username, String password) {
+		this.logger = Bukkit.getLogger();
 		this.host = host;
 		this.port = port;
 		this.database = database;
@@ -21,88 +24,137 @@ public class MySQL {
 	}
 
 	public void connect() {
-		if(!isConnected()) {
+		//Make sure no connection is open
+		if(!(isConnected())) {
 			try {
-				con = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database + "?autoReconnect=true&characterEncoding=utf8&useUnicode=true&interactiveClient=true", username, password);
-				System.out.println("[MySQL] Connected successfully to database!");
-			} catch (SQLException e) {
-				e.printStackTrace();
-				System.out.println("[MySQL] Connection failed!");
+				//Open connection
+				connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database + "?autoReconnect=true&characterEncoding=utf8&useUnicode=true&interactiveClient=true&useSSL=false", username, password);
+				
+				logger.info(PREFIX + "Connected to database successfully!");
+			} catch (SQLException ex) {
+				logger.log(Level.WARNING, PREFIX + "Connection to database failed!");
+				logger.log(Level.WARNING, PREFIX);
+				logger.log(Level.WARNING, PREFIX + "Connection Properties:");
+				logger.log(Level.WARNING, PREFIX + " Address: " + host + ":" + port);
+				logger.log(Level.WARNING, PREFIX + " Database: " + database);
+				logger.log(Level.WARNING, PREFIX + " Username: " + username);
+				
+				String censoredPassword = "";
+				
+				for (int i = 0; i < password.length(); i++)
+					censoredPassword += "*";
+				
+				logger.log(Level.WARNING, PREFIX + " Password: " + censoredPassword);
+				logger.log(Level.WARNING, PREFIX);
+				logger.log(Level.WARNING, PREFIX + "---------- Stack trace START ----------");
+				logger.log(Level.WARNING, "");
+				
+				ex.printStackTrace();
+				
+				logger.log(Level.WARNING, "");
+				logger.log(Level.WARNING, PREFIX + "---------- Stack trace  END  ----------");
 			}
 		}
 	}
 
 	public void disconnect() {
+		//Check if connection is open
 		if(isConnected()) {
 			try {
-				con.close();
-				System.out.println("[MySQL] Connection closed successfully!");
-			} catch (SQLException e) {
-				e.printStackTrace();
-				System.out.println("[MySQL] Connection couldn't be closed!");
+				//Close connection
+				connection.close();
+				
+				logger.info(PREFIX + "Connection to database closed successfully!");
+			} catch (SQLException ex) {
+				logger.log(Level.WARNING, PREFIX + "Could not close Connection to database!");
 			}
 		}
 	}
 
 	public boolean isConnected() {
-		return (con == null ? false : true);
+		try {
+			return ((connection != null) && !(connection.isClosed()));
+		} catch (SQLException ignore) {
+		}
+		
+		return false;
 	}
 
 	public void update(String sql) {
-		checkConnection();
-		
-		new FutureTask<>(new Runnable() {
-			
-			PreparedStatement ps;
-			
-			@Override
-			public void run() {
+		//Check if connection is open
+		if(isConnected()) {
+			new FutureTask<>(() -> {
 				try {
-					ps = con.prepareStatement(sql);
-
-					ps.executeUpdate();
-					ps.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
+					//Execute update
+					Statement s = connection.createStatement();
+					s.executeUpdate(sql);
+					s.close();
+				} catch (SQLException ex) {
+					String msg = ex.getMessage();
+					
+					if(msg.contains("The driver has not received any packets from the server.")) {
+						try {
+							connection.close();
+						} catch (SQLException ex1) {
+						}
+						
+						connection = null;
+						
+						connect();
+					} else
+						logger.log(Level.WARNING, PREFIX + "An error occured while executing mysql update (" + msg + ")!");
 				}
-			}
-		}, 1).run();
+			}, 1).run();
+		}
 	}
 
 	public ResultSet getResult(String qry) {
-		checkConnection();
-		
-		try {
-			final FutureTask<ResultSet> task = new FutureTask<ResultSet>(new Callable<ResultSet>() {
-				
-				PreparedStatement ps;
-				
-				@Override
-				public ResultSet call() throws Exception {
-					ps = con.prepareStatement(qry);
+		//Check if connection is open
+		if(isConnected()) {
+			try {
+				final FutureTask<ResultSet> task = new FutureTask<ResultSet>(new Callable<ResultSet>() {
 					
-					return ps.executeQuery();
-				}
-			});
+					@Override
+					public ResultSet call() {
+						
+						try {
+							//Execute query
+							Statement s = connection.createStatement();
+							ResultSet rs = s.executeQuery(qry);
+							
+							return rs;
+						} catch (SQLException ex) {
+							String msg = ex.getMessage();
+							
+							if(msg.contains("The driver has not received any packets from the server.")) {
+								try {
+									connection.close();
+								} catch (SQLException ex1) {
+								}
+								
+								connection = null;
+								
+								connect();
+							} else
+								logger.log(Level.WARNING, PREFIX + "An error occured while executing mysql update (" + msg + ")!");
+						}
+						
+						return null;
+					}
+				});
+				
+				task.run();
 			
-			task.run();
-		
-			return task.get();
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
+				return task.get();
+			} catch (InterruptedException | ExecutionException ex) {
+			}
 		}
 		
 		return null;
 	}
-	
-	private void checkConnection() {
-		if(!(isConnected())) {
-			connect();
-		}
-	}
 
 	public Connection getConnection() {
-		return con;
+		return connection;
 	}
 
 }

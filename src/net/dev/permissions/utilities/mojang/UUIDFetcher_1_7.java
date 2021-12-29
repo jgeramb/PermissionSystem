@@ -1,4 +1,4 @@
-package net.dev.permissions.utils.fetching;
+package net.dev.permissions.utilities.mojang;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

@@ -5,27 +5,27 @@ import org.bukkit.event.*;
 import org.bukkit.event.player.PlayerKickEvent;
 
 import net.dev.permissions.PermissionSystem;
-import net.dev.permissions.utils.Utils;
+import net.dev.permissions.utilities.Utilities;
 
 public class PlayerKickListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onPlayerKick(PlayerKickEvent e) {
+	public void onPlayerKick(PlayerKickEvent event) {
 		PermissionSystem permissionSystem = PermissionSystem.getInstance();
-		Utils utils = permissionSystem.getUtils();
+		Utilities utilities = permissionSystem.getUtils();
 		
-		Player p = e.getPlayer();
+		Player player = event.getPlayer();
 
-		if (utils.getAttachments().containsKey(p.getUniqueId())) {
-			p.removeAttachment(utils.getAttachments().get(p.getUniqueId()));
-			utils.getAttachments().remove(p.getUniqueId());
+		if (utilities.getAttachments().containsKey(player.getUniqueId())) {
+			player.removeAttachment(utilities.getAttachments().get(player.getUniqueId()));
+			utilities.getAttachments().remove(player.getUniqueId());
 		}
 
-		if (permissionSystem.getFileUtils().getConfig().getBoolean("Settings.UsePrefixesAndSuffixes"))
-			permissionSystem.getTeamUtils().removePlayerFromTeams(p.getName());
+		if (permissionSystem.getFileUtils().getConfiguration().getBoolean("Settings.UsePrefixesAndSuffixes"))
+			permissionSystem.getScoreboardTeamHandler().removePlayerFromTeams(player.getName());
 		
-		if(utils.getDebugging().contains(p))
-			utils.getDebugging().remove(p);
+		if(utilities.getDebugging().contains(player))
+			utilities.getDebugging().remove(player);
 	}
 
 }

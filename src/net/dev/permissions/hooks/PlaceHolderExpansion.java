@@ -1,4 +1,4 @@
-package net.dev.permissions.placeholders;
+package net.dev.permissions.hooks;
 
 import java.util.UUID;
 
@@ -7,9 +7,9 @@ import org.bukkit.plugin.Plugin;
 
 import net.dev.permissions.PermissionSystem;
 import net.dev.permissions.sql.MySQLPermissionManager;
-import net.dev.permissions.utils.*;
-import net.dev.permissions.utils.permissionmanagement.PermissionGroup;
-import net.dev.permissions.utils.permissionmanagement.PermissionUser;
+import net.dev.permissions.utilities.*;
+import net.dev.permissions.utilities.permissionmanagement.PermissionGroup;
+import net.dev.permissions.utilities.permissionmanagement.PermissionUser;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
@@ -22,15 +22,15 @@ public class PlaceHolderExpansion extends PlaceholderExpansion {
 	}
 	
 	@Override
-	public String onPlaceholderRequest(Player p, String identifier) {
+	public String onPlaceholderRequest(Player player, String identifier) {
 		PermissionSystem permissionSystem = PermissionSystem.getInstance();
-		Utils utils = permissionSystem.getUtils();
+		Utilities utilities = permissionSystem.getUtils();
 		FileUtils fileUtils = permissionSystem.getFileUtils();
 		PermissionConfigUtils permissionConfigUtils = permissionSystem.getPermissionConfigUtils();
 		MySQLPermissionManager mysqlPermissionManager = permissionSystem.getMySQLPermissionManager();
 		
-		if(p != null) {
-			UUID uuid = p.getUniqueId();
+		if(player != null) {
+			UUID uuid = player.getUniqueId();
 			PermissionUser user = new PermissionUser(uuid);
 			
 			if(identifier.equals("group_expiry")) {
@@ -44,16 +44,16 @@ public class PlaceHolderExpansion extends PlaceholderExpansion {
 					}
 				}
 				
-				if(fileUtils.getConfig().getBoolean("MySQL.Enabled")) {
+				if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled")) {
 					String tempGroupName = mysqlPermissionManager.getPlayerTempGroupName(uuid.toString());
 					
 					if(tempGroupName != null) {
 						timedGroup = tempGroupName;
-						formattedTime = utils.formatTime((mysqlPermissionManager.getPlayerTempGroupTime(uuid.toString()) - System.currentTimeMillis()) / 1000);
+						formattedTime = utilities.formatTime((mysqlPermissionManager.getPlayerTempGroupTime(uuid.toString()) - System.currentTimeMillis()) / 1000L);
 					}
-				} else if(permissionConfigUtils.getConfig().getStringList("TempRanks").contains(uuid.toString())) {
-					timedGroup = permissionConfigUtils.getConfig().getString("Ranks." + uuid.toString() + ".GroupName");
-					formattedTime = utils.formatTime((permissionConfigUtils.getConfig().getLong("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000);
+				} else if(permissionConfigUtils.getConfiguration().getStringList("TempRanks").contains(uuid.toString())) {
+					timedGroup = permissionConfigUtils.getConfiguration().getString("Ranks." + uuid.toString() + ".GroupName");
+					formattedTime = utilities.formatTime((permissionConfigUtils.getConfiguration().getLong("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000L);
 				}
 				
 				return ((formattedTime.isEmpty() || !(timedGroup.equals(group))) ? "NONE" : formattedTime);

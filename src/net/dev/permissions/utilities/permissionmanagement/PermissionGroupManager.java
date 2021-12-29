@@ -1,4 +1,4 @@
-package net.dev.permissions.utils.permissionmanagement;
+package net.dev.permissions.utilities.permissionmanagement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,10 +12,10 @@ public class PermissionGroupManager {
 		
 		List<String> groupNames;
 		
-		if(permissionSystem.getFileUtils().getConfig().getBoolean("MySQL.Enabled"))
+		if(permissionSystem.getFileUtils().getConfiguration().getBoolean("MySQL.Enabled"))
 			groupNames = permissionSystem.getMySQLPermissionManager().getGroupNames();
 		else
-			groupNames = permissionSystem.getPermissionConfigUtils().getConfig().getStringList("Groups.GroupNames");
+			groupNames = permissionSystem.getPermissionConfigUtils().getConfiguration().getStringList("Groups.GroupNames");
 		
 		List<PermissionGroup> permissionGroups = new ArrayList<>();
 		

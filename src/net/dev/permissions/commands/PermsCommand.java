@@ -11,9 +11,9 @@ import org.bukkit.permissions.PermissionDefault;
 
 import net.dev.permissions.PermissionSystem;
 import net.dev.permissions.sql.MySQLPermissionManager;
-import net.dev.permissions.utils.*;
-import net.dev.permissions.utils.fetching.UUIDFetching;
-import net.dev.permissions.utils.permissionmanagement.*;
+import net.dev.permissions.utilities.*;
+import net.dev.permissions.utilities.mojang.UUIDFetching;
+import net.dev.permissions.utilities.permissionmanagement.*;
 import net.dev.permissions.webserver.WebServerManager;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -23,7 +23,7 @@ public class PermsCommand implements CommandExecutor {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		PermissionSystem permissionSystem = PermissionSystem.getInstance();
-		Utils utils = permissionSystem.getUtils();
+		Utilities utilities = permissionSystem.getUtils();
 		FileUtils fileUtils = permissionSystem.getFileUtils();
 		PermissionConfigUtils permissionConfigUtils = permissionSystem.getPermissionConfigUtils();
 		ImportUtils importUtils = permissionSystem.getImportUtils();
@@ -34,149 +34,149 @@ public class PermsCommand implements CommandExecutor {
 		
 		WebServerManager webServerManager = permissionSystem.getWebServerManager();
 		
-		String prefix = utils.getPrefix();
+		String prefix = utilities.getPrefix();
 		
 		if(sender instanceof Player) {
-			Player p = (Player) sender;
+			Player player = (Player) sender;
 			
-			if(p.hasPermission(new Permission("permissions.*", PermissionDefault.FALSE))) {
+			if(player.hasPermission(new Permission("permissions.*", PermissionDefault.FALSE))) {
 				if(args.length == 1) {
 					if(args[0].equalsIgnoreCase("groups") || args[0].equalsIgnoreCase("group")) {
 						List<PermissionGroup> list = permissionGroupManager.getPermissionGroups();
 						
 						if(!(list.isEmpty())) {
-							p.sendMessage(prefix + "§eCached groups§8:");
+							player.sendMessage(prefix + "§eCached groups§8:");
 							
 							for (PermissionGroup permissionGroup : list)
-								p.sendMessage(prefix + "§7- §a" + permissionGroup.getName());
+								player.sendMessage(prefix + "§7- §a" + permissionGroup.getName());
 						} else
-							p.sendMessage(prefix + "§cThere are no groups to be shown§7!");
+							player.sendMessage(prefix + "§cThere are no groups to be shown§7!");
 					} else if(args[0].equalsIgnoreCase("users") || args[0].equalsIgnoreCase("user")) {
 						List<String> list = permissionUserManager.getPermissionPlayerUUIDs();
 						
 						if(!(list.isEmpty())) {
-							p.sendMessage(prefix + "§eCached users-uuids§8:");
+							player.sendMessage(prefix + "§eCached users-uuids§8:");
 							
 							for (String uuid : list)
-								p.sendMessage(prefix + "§7- §a" + uuid);
+								player.sendMessage(prefix + "§7- §a" + uuid);
 						} else
-							p.sendMessage(prefix + "§cThere are no users to be shown§7!");
+							player.sendMessage(prefix + "§cThere are no users to be shown§7!");
 					} else if(args[0].equalsIgnoreCase("reload")) {
 						fileUtils.reloadConfig();
 						permissionConfigUtils.reloadConfig();
 						
-						p.sendMessage(prefix + "§eThe config files were reloaded§7!");
+						player.sendMessage(prefix + "§eThe config files were reloaded§7!");
 					} else if(args[0].equalsIgnoreCase("editor")) {
-						if(fileUtils.getConfig().getBoolean("WebServer.Enabled") && (webServerManager != null)) {
-							String url = "http://" + utils.getIpAddress() + ":" + fileUtils.getConfig().getInt("WebServer.Port") + "?authKey=" + webServerManager.getAuthKey();
+						if(fileUtils.getConfiguration().getBoolean("WebServer.Enabled") && (webServerManager != null)) {
+							String url = "http://" + utilities.getIpAddress() + ":" + fileUtils.getConfiguration().getInt("WebServer.Port") + "?authKey=" + webServerManager.getAuthKey();
 							TextComponent base = new TextComponent(prefix + "§eClick on the link to get to the web editor§8: ");
 							TextComponent clickable = new TextComponent("§a" + url);
 							clickable.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
 							base.addExtra(clickable);
 							
-							p.spigot().sendMessage(base);
+							player.spigot().sendMessage(base);
 						} else
-							p.sendMessage(prefix + "§cThe web server is not enabled or not running§7!");
+							player.sendMessage(prefix + "§cThe web server is not enabled or not running§7!");
 					} else
-						utils.sendHelpMessage(p);
+						utilities.sendHelpMessage(player);
 				} else if(args.length == 2) {
 					if(args[0].equalsIgnoreCase("group")) {
 						PermissionGroup permissionGroup = new PermissionGroup(args[1]);
 						
 						if(permissionGroup.exists()) {
-							p.sendMessage(prefix + "§8§m----------§8 [ §6" + permissionGroup.getName() + " §8] §m----------");
-							p.sendMessage(prefix + "§eMembers§8:" + (permissionGroup.getMemberUUIDs().isEmpty() ? " §cNone" : ""));
+							player.sendMessage(prefix + "§8§m----------§8 [ §6" + permissionGroup.getName() + " §8] §m----------");
+							player.sendMessage(prefix + "§eMembers§8:" + (permissionGroup.getMemberUUIDs().isEmpty() ? " §cNone" : ""));
 							
 							for (String value : permissionGroup.getMemberUUIDs())
-								p.sendMessage(prefix + "§7- §a" + value);
+								player.sendMessage(prefix + "§7- §a" + value);
 							
-							p.sendMessage(prefix + "§ePermissions§8:" + (permissionGroup.getPermissions().isEmpty() ? " §cNone" : ""));
+							player.sendMessage(prefix + "§ePermissions§8:" + (permissionGroup.getPermissions().isEmpty() ? " §cNone" : ""));
 							
 							for (String value : permissionGroup.getPermissions())
-								p.sendMessage(prefix + "§7- §a" + value);
+								player.sendMessage(prefix + "§7- §a" + value);
 							
 							String parent = permissionGroup.getParent();
 							
-							p.sendMessage(prefix + "§eParent§8: " + (((parent != null) && !(parent.isEmpty())) ? ("§f'§a" + parent + "§f'") : "§cNone"));
-							p.sendMessage(prefix + "§ePrefix§8: §f'§a" + permissionGroup.getPrefix() + "§f'");
-							p.sendMessage(prefix + "§eSuffix§8: §f'§a" + permissionGroup.getSuffix() + "§f'");
-							p.sendMessage(prefix + "§eChat-Prefix§8: §f'§a" + permissionGroup.getChatPrefix() + "§f'");
-							p.sendMessage(prefix + "§eChat-Suffix§8: §f'§a" + permissionGroup.getChatSuffix() + "§f'");
-							p.sendMessage(prefix + "§eDefault§8: §f'§a" + permissionGroup.isDefault() + "§f'");
-							p.sendMessage(prefix + "§eWeight§8: §f'§a" + permissionGroup.getWeight() + "§f'");
-							p.sendMessage(prefix + "§8§m----------§8 [ §6" + permissionGroup.getName() + " §8] §m----------");
+							player.sendMessage(prefix + "§eParent§8: " + (((parent != null) && !(parent.isEmpty())) ? ("§f'§a" + parent + "§f'") : "§cNone"));
+							player.sendMessage(prefix + "§ePrefix§8: §f'§a" + permissionGroup.getPrefix() + "§f'");
+							player.sendMessage(prefix + "§eSuffix§8: §f'§a" + permissionGroup.getSuffix() + "§f'");
+							player.sendMessage(prefix + "§eChat-Prefix§8: §f'§a" + permissionGroup.getChatPrefix() + "§f'");
+							player.sendMessage(prefix + "§eChat-Suffix§8: §f'§a" + permissionGroup.getChatSuffix() + "§f'");
+							player.sendMessage(prefix + "§eDefault§8: §f'§a" + permissionGroup.isDefault() + "§f'");
+							player.sendMessage(prefix + "§eWeight§8: §f'§a" + permissionGroup.getWeight() + "§f'");
+							player.sendMessage(prefix + "§8§m----------§8 [ §6" + permissionGroup.getName() + " §8] §m----------");
 						} else
-							p.sendMessage(prefix + "§cThe group §a" + args[1] + " §cdoes not exist§7!");
+							player.sendMessage(prefix + "§cThe group §a" + args[1] + " §cdoes not exist§7!");
 					} else if(args[0].equalsIgnoreCase("user")) {
 						PermissionUser permissionUser;
-						Player t  = Bukkit.getPlayer(args[1]);
-						UUID uuid;
-						String name;
+						Player targetPlayer  = Bukkit.getPlayer(args[1]);
+						UUID targetUniqueId;
+						String targetName;
 						
-						if(t != null) {
-							uuid = t.getUniqueId();
-							name = t.getName();
+						if(targetPlayer != null) {
+							targetUniqueId = targetPlayer.getUniqueId();
+							targetName = targetPlayer.getName();
 						} else {
-							name = args[1];
-							uuid = uuidFetching.fetchUUID(name);
+							targetName = args[1];
+							targetUniqueId = uuidFetching.fetchUUID(targetName);
 						}
 						
-						permissionUser = new PermissionUser(uuid);
+						permissionUser = new PermissionUser(targetUniqueId);
 						
-						p.sendMessage(prefix + "§8§m----------§8 [ §6" + name + " §8] §m----------");
-						p.sendMessage(prefix + "§eGroups§8:" + (permissionUser.getGroups().isEmpty() ? " §cNone" : ""));
+						player.sendMessage(prefix + "§8§m----------§8 [ §6" + targetName + " §8] §m----------");
+						player.sendMessage(prefix + "§eGroups§8:" + (permissionUser.getGroups().isEmpty() ? " §cNone" : ""));
 						
 						String timedGroup = "NONE";
 						String formattedTime = "";
 						
-						if(fileUtils.getConfig().getBoolean("MySQL.Enabled")) {
-							String tempGroupName = mysqlPermissionManager.getPlayerTempGroupName(uuid.toString());
+						if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled")) {
+							String tempGroupName = mysqlPermissionManager.getPlayerTempGroupName(targetUniqueId.toString());
 							
 							if(tempGroupName != null) {
 								timedGroup = tempGroupName;
-								formattedTime = utils.formatTime((mysqlPermissionManager.getPlayerTempGroupTime(uuid.toString()) - System.currentTimeMillis()) / 1000L);
+								formattedTime = utilities.formatTime((mysqlPermissionManager.getPlayerTempGroupTime(targetUniqueId.toString()) - System.currentTimeMillis()) / 1000L);
 							}
-						} else if(permissionConfigUtils.getConfig().getStringList("TempRanks").contains(uuid.toString())) {
-							timedGroup = permissionConfigUtils.getConfig().getString("Ranks." + uuid.toString() + ".GroupName");
-							formattedTime = utils.formatTime((permissionConfigUtils.getConfig().getLong("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000L);
+						} else if(permissionConfigUtils.getConfiguration().getStringList("TempRanks").contains(targetUniqueId.toString())) {
+							timedGroup = permissionConfigUtils.getConfiguration().getString("Ranks." + targetUniqueId.toString() + ".GroupName");
+							formattedTime = utilities.formatTime((permissionConfigUtils.getConfiguration().getLong("Ranks." + targetUniqueId.toString() + ".Time") - System.currentTimeMillis()) / 1000L);
 						}
 						
 						for (PermissionGroup group : permissionUser.getGroups())
-							p.sendMessage(prefix + "§7- §a" + group.getName() + (group.getName().equalsIgnoreCase(timedGroup) ? (" §8[§d" + formattedTime + "§8]") : ""));
+							player.sendMessage(prefix + "§7- §a" + group.getName() + (group.getName().equalsIgnoreCase(timedGroup) ? (" §8[§d" + formattedTime + "§8]") : ""));
 						
-						p.sendMessage(prefix + "§ePermissions§8:" + (permissionUser.getPermissions().isEmpty() ? " §cNone" : ""));
+						player.sendMessage(prefix + "§ePermissions§8:" + (permissionUser.getPermissions().isEmpty() ? " §cNone" : ""));
 						
 						for (String value : permissionUser.getPermissions())
-							p.sendMessage(prefix + "§7- §a" + value);
+							player.sendMessage(prefix + "§7- §a" + value);
 						
-						p.sendMessage(prefix + "§ePrefix§8: §f'§a" + permissionUser.getPrefix() + "§f'");
-						p.sendMessage(prefix + "§eSuffix§8: §f'§a" + permissionUser.getSuffix() + "§f'");
-						p.sendMessage(prefix + "§eChat-Prefix§8: §f'§a" + permissionUser.getChatPrefix() + "§f'");
-						p.sendMessage(prefix + "§eChat-Suffix§8: §f'§a" + permissionUser.getChatSuffix() + "§f'");
-						p.sendMessage(prefix + "§8§m----------§8 [ §6" + name + " §8] §m----------");
+						player.sendMessage(prefix + "§ePrefix§8: §f'§a" + permissionUser.getPrefix() + "§f'");
+						player.sendMessage(prefix + "§eSuffix§8: §f'§a" + permissionUser.getSuffix() + "§f'");
+						player.sendMessage(prefix + "§eChat-Prefix§8: §f'§a" + permissionUser.getChatPrefix() + "§f'");
+						player.sendMessage(prefix + "§eChat-Suffix§8: §f'§a" + permissionUser.getChatSuffix() + "§f'");
+						player.sendMessage(prefix + "§8§m----------§8 [ §6" + targetName + " §8] §m----------");
 					} else if(args[0].equalsIgnoreCase("import")) {
 						if(args[1].equalsIgnoreCase("sql")) {
-							if(fileUtils.getConfig().getBoolean("MySQL.Enabled")) {
+							if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled")) {
 								long start = System.currentTimeMillis();
 								
 								importUtils.importFromSQL();
 								
-								p.sendMessage(prefix + "§eImported data from §aMySQL §ein §d" + (System.currentTimeMillis() - start) + "ms§7!");
+								player.sendMessage(prefix + "§eImported data from §aMySQL §ein §d" + (System.currentTimeMillis() - start) + "ms§7!");
 							} else
-								p.sendMessage(prefix + "§cPlease enable MySQL in the config.yml and reload/restart the server§7!");
+								player.sendMessage(prefix + "§cPlease enable MySQL in the config.yml and reload/restart the server§7!");
 						} else if(args[1].equalsIgnoreCase("file")) {
-							if(fileUtils.getConfig().getBoolean("MySQL.Enabled")) {
+							if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled")) {
 								long start = System.currentTimeMillis();
 								
 								importUtils.importFromFile();
 								
-								p.sendMessage(prefix + "§eImported data from §apermissions.yml §ein §d" + (System.currentTimeMillis() - start) + "ms§7!");
+								player.sendMessage(prefix + "§eImported data from §apermissions.yml §ein §d" + (System.currentTimeMillis() - start) + "ms§7!");
 							} else
-								p.sendMessage(prefix + "§cPlease enable MySQL in the config.yml and reload/restart the server§7!");
+								player.sendMessage(prefix + "§cPlease enable MySQL in the config.yml and reload/restart the server§7!");
 						} else
-							p.sendMessage(prefix + "§e/perm import «sql | file»");
+							player.sendMessage(prefix + "§e/perm import «sql | file»");
 					} else
-						utils.sendHelpMessage(p);
+						utilities.sendHelpMessage(player);
 				} else if(args.length == 3) {
 					if(args[0].equalsIgnoreCase("group")) {
 						PermissionGroup permissionGroup = new PermissionGroup(args[1]);
@@ -185,15 +185,15 @@ public class PermsCommand implements CommandExecutor {
 							if(!(permissionGroup.exists())) {
 								permissionGroup.registerGroupIfNotExisting();
 								
-								p.sendMessage(prefix + "§eThe group §a" + permissionGroup.getName() + " §ewas created§7!");
+								player.sendMessage(prefix + "§eThe group §a" + permissionGroup.getName() + " §ewas created§7!");
 							} else
-								p.sendMessage(prefix + "§cA group with the name §a" + args[1] + " §cdoes already exist§7!");
+								player.sendMessage(prefix + "§cA group with the name §a" + args[1] + " §cdoes already exist§7!");
 						} else if(args[2].equalsIgnoreCase("delete")) {
 							if(permissionGroup.exists()) {
 								List<PermissionGroup> list = permissionGroupManager.getPermissionGroups();
 								
 								if(list.size() == 1)
-									p.sendMessage(prefix + "§cYou can not delete this group§7, §cbecause it is the last group§7!");
+									player.sendMessage(prefix + "§cYou can not delete this group§7, §cbecause it is the last group§7!");
 								else {
 									boolean defaultGroupExists = false;
 									
@@ -226,32 +226,32 @@ public class PermsCommand implements CommandExecutor {
 
 									permissionSystem.updatePrefixesAndSuffixes();
 									
-									p.sendMessage(prefix + "§cThe group §a" + permissionGroup.getName() + " §cwas deleted§7!");
+									player.sendMessage(prefix + "§cThe group §a" + permissionGroup.getName() + " §cwas deleted§7!");
 								}
 							} else
-								p.sendMessage(prefix + "§cThe group §a" + args[1] + " §cdoes not exist§7!");
+								player.sendMessage(prefix + "§cThe group §a" + args[1] + " §cdoes not exist§7!");
 						} else if(permissionGroup.exists()) {
 							if(args[2].equalsIgnoreCase("clear")) {
 								permissionGroup.clearPermissions();
 								
-								p.sendMessage(prefix + "§cThe permissions of the group §a" + permissionGroup.getName() + " §cwere cleared§7!");
+								player.sendMessage(prefix + "§cThe permissions of the group §a" + permissionGroup.getName() + " §cwere cleared§7!");
 							} else
-								utils.sendHelpMessage(p);
+								utilities.sendHelpMessage(player);
 						} else if(!(permissionGroup.exists()))
-							p.sendMessage(prefix + "§cThe group §a" + args[1] + " §cdoes not exist§7!");
+							player.sendMessage(prefix + "§cThe group §a" + args[1] + " §cdoes not exist§7!");
 						else
-							utils.sendHelpMessage(p);
+							utilities.sendHelpMessage(player);
 					} else if(args[0].equalsIgnoreCase("user")) {
 						PermissionUser permissionUser = permissionUserManager.getPermissionPlayer(args[1]);
 						
 						if(args[2].equalsIgnoreCase("clear")) {
 							permissionUser.clearPermissions();
 							
-							p.sendMessage(prefix + "§cThe permissions of the player §a" + args[1] + " §cwere cleared§7!");
+							player.sendMessage(prefix + "§cThe permissions of the player §a" + args[1] + " §cwere cleared§7!");
 						} else
-							utils.sendHelpMessage(p);
+							utilities.sendHelpMessage(player);
 					} else
-						utils.sendHelpMessage(p);
+						utilities.sendHelpMessage(player);
 				} else if(args.length >= 4) {
 					if(args[0].equalsIgnoreCase("group")) {
 						PermissionGroup permissionGroup = new PermissionGroup(args[1]);
@@ -260,7 +260,7 @@ public class PermsCommand implements CommandExecutor {
 							if(args[2].equalsIgnoreCase("add")) {
 								permissionGroup.addPermission(args[3]);
 								
-								p.sendMessage(prefix + "§eThe permission §a" + args[3] + " §ewas added to the group §d" + permissionGroup.getName() + "§7!");
+								player.sendMessage(prefix + "§eThe permission §a" + args[3] + " §ewas added to the group §d" + permissionGroup.getName() + "§7!");
 							} else if(args[2].equalsIgnoreCase("remove")) {
 								String permToRemove = args[3];
 								
@@ -273,7 +273,7 @@ public class PermsCommand implements CommandExecutor {
 								
 								permissionGroup.removePermission(permToRemove);
 								
-								p.sendMessage(prefix + "§cThe permission §a" + permToRemove + " §cwas removed from the group §d" + permissionGroup.getName() + "§7!");
+								player.sendMessage(prefix + "§cThe permission §a" + permToRemove + " §cwas removed from the group §d" + permissionGroup.getName() + "§7!");
 							} else if(args[2].equalsIgnoreCase("addMember")) {
 								String name = args[3];
 								PermissionUser permissionUser = new PermissionUser(uuidFetching.fetchUUID(name));
@@ -291,7 +291,7 @@ public class PermsCommand implements CommandExecutor {
 								
 								permissionSystem.updatePrefixesAndSuffixes();
 								
-								p.sendMessage(prefix + "§eThe player §a" + args[3] + " §ewas added to the group §d" + permissionGroup.getName() + "§7!");
+								player.sendMessage(prefix + "§eThe player §a" + args[3] + " §ewas added to the group §d" + permissionGroup.getName() + "§7!");
 							} else if(args[2].equalsIgnoreCase("removeMember")) {
 								String name = args[3];
 								permissionGroup.removeMember(name, true);
@@ -308,7 +308,7 @@ public class PermsCommand implements CommandExecutor {
 								
 								permissionSystem.updatePrefixesAndSuffixes();
 								
-								p.sendMessage(prefix + "§cThe player §a" + args[3] + " §cwas removed from the group §d" + permissionGroup.getName() + "§7!");
+								player.sendMessage(prefix + "§cThe player §a" + args[3] + " §cwas removed from the group §d" + permissionGroup.getName() + "§7!");
 							} else if(args[2].equalsIgnoreCase("setDefault")) {
 								for (PermissionGroup group : permissionGroupManager.getPermissionGroups()) {
 									if(group != permissionGroup) {
@@ -323,7 +323,7 @@ public class PermsCommand implements CommandExecutor {
 									permissionGroup.setDefault(false);
 								}
 								
-								p.sendMessage(prefix + "§eThe default group value of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
+								player.sendMessage(prefix + "§eThe default group value of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
 							} else if(args[2].equalsIgnoreCase("setPrefix")) {
 								String value = "";
 								
@@ -338,7 +338,7 @@ public class PermsCommand implements CommandExecutor {
 								permissionGroup.setPrefix(value);
 								permissionSystem.updatePrefixesAndSuffixes();
 								
-								p.sendMessage(prefix + "§eThe prefix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
+								player.sendMessage(prefix + "§eThe prefix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
 							} else if(args[2].equalsIgnoreCase("setChatPrefix")) {
 								String value = "";
 								
@@ -350,7 +350,7 @@ public class PermsCommand implements CommandExecutor {
 								permissionGroup.setChatPrefix(value);
 								permissionSystem.updatePrefixesAndSuffixes();
 								
-								p.sendMessage(prefix + "§eThe chat prefix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
+								player.sendMessage(prefix + "§eThe chat prefix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
 							} else if(args[2].equalsIgnoreCase("setSuffix")) {
 								String value = "";
 								
@@ -365,7 +365,7 @@ public class PermsCommand implements CommandExecutor {
 								permissionGroup.setSuffix(value);
 								permissionSystem.updatePrefixesAndSuffixes();
 								
-								p.sendMessage(prefix + "§eThe suffix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
+								player.sendMessage(prefix + "§eThe suffix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
 							} else if(args[2].equalsIgnoreCase("setChatSuffix")) {
 								String value = "";
 								
@@ -377,34 +377,34 @@ public class PermsCommand implements CommandExecutor {
 								permissionGroup.setChatSuffix(value);
 								permissionSystem.updatePrefixesAndSuffixes();
 								
-								p.sendMessage(prefix + "§eThe chat suffix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
+								player.sendMessage(prefix + "§eThe chat suffix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
 							} else if(args[2].equalsIgnoreCase("setWeight")) {
-								int i = 0;
+								int weight = 0;
 								
 								try {
-									i = Integer.parseInt(args[3]);
+									weight = Integer.parseInt(args[3]);
 									
-									if(i > 999)
-										i = 999;
-									else if(i < 1)
-										i = 1;
+									if(weight > 999)
+										weight = 999;
+									else if(weight < 1)
+										weight = 1;
 								} catch (NumberFormatException e) {
 								}
 								
-								permissionGroup.setWeight(i);
+								permissionGroup.setWeight(weight);
 								
 								permissionSystem.updatePrefixesAndSuffixes();
 							
-								p.sendMessage(prefix + "§eThe weight of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
+								player.sendMessage(prefix + "§eThe weight of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
 							} else if(args[2].equalsIgnoreCase("setParent")) {
 								permissionGroup.setParent(args[3].equals("none") ? null : args[3]);
 								permissionGroup.updatePermissions();
 							
-								p.sendMessage(prefix + "§eThe parent of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
+								player.sendMessage(prefix + "§eThe parent of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
 							} else
-								utils.sendHelpMessage(p);
+								utilities.sendHelpMessage(player);
 						} else
-							p.sendMessage(prefix + "§cThe group §a" + args[1] + " §cdoes not exist§7!");
+							player.sendMessage(prefix + "§cThe group §a" + args[1] + " §cdoes not exist§7!");
 					} else if(args[0].equalsIgnoreCase("user")) {
 						PermissionUser permissionUser = permissionUserManager.getPermissionPlayer(args[1]);
 						
@@ -412,7 +412,7 @@ public class PermsCommand implements CommandExecutor {
 							if(args[2].equalsIgnoreCase("add")) {
 								permissionUser.addPermission(args[3]);
 								
-								p.sendMessage(prefix + "§eThe permission §a" + args[3] + " §ewas added to the player §d" + args[1] + "§7!");
+								player.sendMessage(prefix + "§eThe permission §a" + args[3] + " §ewas added to the player §d" + args[1] + "§7!");
 							} else if(args[2].equalsIgnoreCase("remove")) {
 								String permToRemove = args[3];
 								
@@ -425,7 +425,7 @@ public class PermsCommand implements CommandExecutor {
 								
 								permissionUser.removePermission(permToRemove);
 								
-								p.sendMessage(prefix + "§cThe permission §a" + permToRemove + " §cwas removed from the player §d" + args[1] + "§7!");
+								player.sendMessage(prefix + "§cThe permission §a" + permToRemove + " §cwas removed from the player §d" + args[1] + "§7!");
 							} else if(args[2].equalsIgnoreCase("setgroup")) {
 								String name = args[1];
 								PermissionGroup permissionGroup = new PermissionGroup(args[3]);
@@ -461,25 +461,25 @@ public class PermsCommand implements CommandExecutor {
 											
 											UUID uuid = uuidFetching.fetchUUID(name);
 											
-											if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
+											if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled"))
 												permissionSystem.getMySQLPermissionManager().setPlayerTempGroup(uuid.toString(), permissionGroup.getName(), System.currentTimeMillis() + (time * 1000L));
 											else {
-												List<String> ranks = permissionConfigUtils.getConfig().getStringList("TempRanks");
+												List<String> ranks = permissionConfigUtils.getConfiguration().getStringList("TempRanks");
 												
 												if(!(ranks.contains(uuid.toString())))
 													ranks.add(uuid.toString());
 												
-												permissionConfigUtils.getConfig().set("TempRanks", ranks);
-												permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".GroupName", permissionGroup.getName());
-												permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".Time", System.currentTimeMillis() + (time * 1000L));
+												permissionConfigUtils.getConfiguration().set("TempRanks", ranks);
+												permissionConfigUtils.getConfiguration().set("Ranks." + uuid.toString() + ".GroupName", permissionGroup.getName());
+												permissionConfigUtils.getConfiguration().set("Ranks." + uuid.toString() + ".Time", System.currentTimeMillis() + (time * 1000L));
 												permissionConfigUtils.saveFile();
 											}
 											
 											permissionSystem.updatePrefixesAndSuffixes();
 											
-											p.sendMessage(prefix + "§eThe group of the player §a" + name + " §ewas set to §d" + permissionGroup.getName() + " §efor §d" + value + " " + unit + "§7!");
+											player.sendMessage(prefix + "§eThe group of the player §a" + name + " §ewas set to §d" + permissionGroup.getName() + " §efor §d" + value + " " + unit + "§7!");
 										} else {
-											utils.sendHelpMessage(p);
+											utilities.sendHelpMessage(player);
 										}
 									} else {
 										for (PermissionGroup group : permissionUser.getGroups())
@@ -489,14 +489,14 @@ public class PermsCommand implements CommandExecutor {
 										
 										permissionSystem.updatePrefixesAndSuffixes();
 										
-										p.sendMessage(prefix + "§eThe group of the player §a" + name + " §ewas set to §d" + permissionGroup.getName() + "§7!");
+										player.sendMessage(prefix + "§eThe group of the player §a" + name + " §ewas set to §d" + permissionGroup.getName() + "§7!");
 									}
 								} else
-									p.sendMessage(prefix + "§cThe group §a" + args[3] + " §cdoes not exist§7!");
+									player.sendMessage(prefix + "§cThe group §a" + args[3] + " §cdoes not exist§7!");
 							} else if(args[2].equalsIgnoreCase("clear")) {
 								permissionUser.clearPermissions();
 								
-								p.sendMessage(prefix + "§cThe permissions of the player §a" + args[1] + " §cwere cleared§7!");
+								player.sendMessage(prefix + "§cThe permissions of the player §a" + args[1] + " §cwere cleared§7!");
 							} else if(args[2].equalsIgnoreCase("setPrefix")) {
 								String value = "";
 								
@@ -511,7 +511,7 @@ public class PermsCommand implements CommandExecutor {
 								permissionUser.setPrefix(value);
 								permissionSystem.updatePrefixesAndSuffixes();
 								
-								p.sendMessage(prefix + "§eThe prefix of the player §a" + args[1] + " §ewas updated§7!");
+								player.sendMessage(prefix + "§eThe prefix of the player §a" + args[1] + " §ewas updated§7!");
 							} else if(args[2].equalsIgnoreCase("setChatPrefix")) {
 								String value = "";
 								
@@ -523,7 +523,7 @@ public class PermsCommand implements CommandExecutor {
 								permissionUser.setChatPrefix(value);
 								permissionSystem.updatePrefixesAndSuffixes();
 								
-								p.sendMessage(prefix + "§eThe chat prefix of the player §a" + args[1] + " §ewas updated§7!");
+								player.sendMessage(prefix + "§eThe chat prefix of the player §a" + args[1] + " §ewas updated§7!");
 							} else if(args[2].equalsIgnoreCase("setSuffix")) {
 								String value = "";
 								
@@ -538,7 +538,7 @@ public class PermsCommand implements CommandExecutor {
 								permissionUser.setSuffix(value);
 								permissionSystem.updatePrefixesAndSuffixes();
 								
-								p.sendMessage(prefix + "§eThe suffix of the player §a" + args[1] + " §ewas updated§7!");
+								player.sendMessage(prefix + "§eThe suffix of the player §a" + args[1] + " §ewas updated§7!");
 							} else if(args[2].equalsIgnoreCase("setChatSuffix")) {
 								String value = "";
 								
@@ -550,149 +550,149 @@ public class PermsCommand implements CommandExecutor {
 								permissionUser.setChatSuffix(value);
 								permissionSystem.updatePrefixesAndSuffixes();
 								
-								p.sendMessage(prefix + "§eThe chat suffix of the player §a" + args[1] + " §ewas updated§7!");
+								player.sendMessage(prefix + "§eThe chat suffix of the player §a" + args[1] + " §ewas updated§7!");
 							} else
-								utils.sendHelpMessage(p);
+								utilities.sendHelpMessage(player);
 						} else
-							p.sendMessage(prefix + "§cThe group §a" + args[1] + " §cdoes not exist§7!");
+							player.sendMessage(prefix + "§cThe group §a" + args[1] + " §cdoes not exist§7!");
 					} else
-						utils.sendHelpMessage(p);
+						utilities.sendHelpMessage(player);
 				} else
-					utils.sendHelpMessage(p);
+					utilities.sendHelpMessage(player);
 			} else
-				p.sendMessage(utils.getNoPerm());
+				player.sendMessage(utilities.getNoPerm());
 		} else {
 			if(args.length == 1) {
 				if(args[0].equalsIgnoreCase("groups") || args[0].equalsIgnoreCase("group")) {
 					List<PermissionGroup> list = permissionGroupManager.getPermissionGroups();
 					
 					if(!(list.isEmpty())) {
-						utils.sendConsole("§eCached groups§8:");
+						utilities.sendConsole("§eCached groups§8:");
 						
 						for (PermissionGroup permissionGroup : list)
-							utils.sendConsole("§e- §a" + permissionGroup.getName());
+							utilities.sendConsole("§e- §a" + permissionGroup.getName());
 					} else
-						utils.sendConsole("§cThere are no groups to show!");
+						utilities.sendConsole("§cThere are no groups to show!");
 				} else if(args[0].equalsIgnoreCase("users") || args[0].equalsIgnoreCase("user")) {
 					List<String> list = permissionUserManager.getPermissionPlayerUUIDs();
 					
 					if(!(list.isEmpty())) {
-						utils.sendConsole("§eCached user-uuids§8:");
+						utilities.sendConsole("§eCached user-uuids§8:");
 						
 						for (String uuid : list)
-							utils.sendConsole("§e- §a" + uuid);
+							utilities.sendConsole("§e- §a" + uuid);
 					} else
-						utils.sendConsole("§cThere are no users to show!");
+						utilities.sendConsole("§cThere are no users to show!");
 				} else if(args[0].equalsIgnoreCase("reload")) {
 					fileUtils.reloadConfig();
 					permissionConfigUtils.reloadConfig();
 					
-					utils.sendConsole("§eThe config files were reloaded§7!");
+					utilities.sendConsole("§eThe config files were reloaded§7!");
 				} else if(args[0].equalsIgnoreCase("editor")) {
-					if(fileUtils.getConfig().getBoolean("WebServer.Enabled") && (webServerManager != null))
-						utils.sendConsole("§eOpen the link in your browser to get to the web editor§8: §ahttp://" + utils.getIpAddress() + ":" + fileUtils.getConfig().getInt("WebServer.Port") + "?authKey=" + webServerManager.getAuthKey());
+					if(fileUtils.getConfiguration().getBoolean("WebServer.Enabled") && (webServerManager != null))
+						utilities.sendConsole("§eOpen the link in your browser to get to the web editor§8: §ahttp://" + utilities.getIpAddress() + ":" + fileUtils.getConfiguration().getInt("WebServer.Port") + "?authKey=" + webServerManager.getAuthKey());
 					else
-						utils.sendConsole("§cThe web server is not enabled or not running§7!");
+						utilities.sendConsole("§cThe web server is not enabled or not running§7!");
 				} else
-					utils.sendHelpMessage(sender);
+					utilities.sendHelpMessage(sender);
 			} else if(args.length == 2) {
 				if(args[0].equalsIgnoreCase("group")) {
 					PermissionGroup permissionGroup = new PermissionGroup(args[1]);
 					
 					if(permissionGroup.exists()) {
-						utils.sendConsole("§8§m----------§8 [ §6" + permissionGroup.getName() + " §8] §m----------");
-						utils.sendConsole("§eMembers§8:" + (permissionGroup.getMemberUUIDs().isEmpty() ? " §cNone" : ""));
+						utilities.sendConsole("§8§m----------§8 [ §6" + permissionGroup.getName() + " §8] §m----------");
+						utilities.sendConsole("§eMembers§8:" + (permissionGroup.getMemberUUIDs().isEmpty() ? " §cNone" : ""));
 						
 						for (String value : permissionGroup.getMemberUUIDs())
-							utils.sendConsole("§e- §a" + value);
+							utilities.sendConsole("§e- §a" + value);
 						
-						utils.sendConsole("§ePermissions§8:" + (permissionGroup.getPermissions().isEmpty() ? " §cNone" : ""));
+						utilities.sendConsole("§ePermissions§8:" + (permissionGroup.getPermissions().isEmpty() ? " §cNone" : ""));
 						
 						for (String value : permissionGroup.getPermissions())
-							utils.sendConsole("§e- §a" + value);
+							utilities.sendConsole("§e- §a" + value);
 						
 						String parent = permissionGroup.getParent();
 						
-						utils.sendConsole("§eParent§8: " + (((parent != null) && !(parent.isEmpty())) ? ("§f'§a" + parent + "§f'") : "§cNone"));
-						utils.sendConsole("§ePrefix§8: §f'§a" + permissionGroup.getPrefix() + "§f'");
-						utils.sendConsole("§eSuffix§8: §f'§a" + permissionGroup.getSuffix() + "§f'");
-						utils.sendConsole("§eChat-Prefix§8: §f'§a" + permissionGroup.getChatPrefix() + "§f'");
-						utils.sendConsole("§eChat-Suffix§8: §f'§a" + permissionGroup.getChatSuffix() + "§f'");
-						utils.sendConsole("§eDefault§8: §f'§a" + permissionGroup.isDefault() + "§f'");
-						utils.sendConsole("§eWeight§8: §f'§a" + permissionGroup.getWeight() + "§f'");
-						utils.sendConsole("§8§m----------§8 [ §6" + permissionGroup.getName() + " §8] §m----------");
+						utilities.sendConsole("§eParent§8: " + (((parent != null) && !(parent.isEmpty())) ? ("§f'§a" + parent + "§f'") : "§cNone"));
+						utilities.sendConsole("§ePrefix§8: §f'§a" + permissionGroup.getPrefix() + "§f'");
+						utilities.sendConsole("§eSuffix§8: §f'§a" + permissionGroup.getSuffix() + "§f'");
+						utilities.sendConsole("§eChat-Prefix§8: §f'§a" + permissionGroup.getChatPrefix() + "§f'");
+						utilities.sendConsole("§eChat-Suffix§8: §f'§a" + permissionGroup.getChatSuffix() + "§f'");
+						utilities.sendConsole("§eDefault§8: §f'§a" + permissionGroup.isDefault() + "§f'");
+						utilities.sendConsole("§eWeight§8: §f'§a" + permissionGroup.getWeight() + "§f'");
+						utilities.sendConsole("§8§m----------§8 [ §6" + permissionGroup.getName() + " §8] §m----------");
 					} else
-						utils.sendConsole("§cThe group §a" + args[1] + " §cdoes not exist§7!");
+						utilities.sendConsole("§cThe group §a" + args[1] + " §cdoes not exist§7!");
 				} else if(args[0].equalsIgnoreCase("user")) {
 					PermissionUser permissionUser;
-					Player t  = Bukkit.getPlayer(args[1]);
-					UUID uuid;
-					String name;
+					Player targetPlayer  = Bukkit.getPlayer(args[1]);
+					UUID targetUniqueId;
+					String targetName;
 					
-					if(t != null) {
-						uuid = t.getUniqueId();
-						name = t.getName();
+					if(targetPlayer != null) {
+						targetUniqueId = targetPlayer.getUniqueId();
+						targetName = targetPlayer.getName();
 					} else {
-						name = args[1];
-						uuid = uuidFetching.fetchUUID(name);
+						targetName = args[1];
+						targetUniqueId = uuidFetching.fetchUUID(targetName);
 					}
 					
-					permissionUser = new PermissionUser(uuid);
+					permissionUser = new PermissionUser(targetUniqueId);
 					
-					utils.sendConsole("§8§m----------§8 [ §6" + name + " §8] §m----------");
-					utils.sendConsole("§eGroups§8:" + (permissionUser.getGroups().isEmpty() ? " §cNone" : ""));
+					utilities.sendConsole("§8§m----------§8 [ §6" + targetName + " §8] §m----------");
+					utilities.sendConsole("§eGroups§8:" + (permissionUser.getGroups().isEmpty() ? " §cNone" : ""));
 					
 					String timedGroup = "NONE";
 					String formattedTime = "";
 					
-					if(fileUtils.getConfig().getBoolean("MySQL.Enabled")) {
-						String tempGroupName = mysqlPermissionManager.getPlayerTempGroupName(uuid.toString());
+					if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled")) {
+						String tempGroupName = mysqlPermissionManager.getPlayerTempGroupName(targetUniqueId.toString());
 						
 						if(tempGroupName != null) {
 							timedGroup = tempGroupName;
-							formattedTime = utils.formatTime((mysqlPermissionManager.getPlayerTempGroupTime(uuid.toString()) - System.currentTimeMillis()) / 1000L);
+							formattedTime = utilities.formatTime((mysqlPermissionManager.getPlayerTempGroupTime(targetUniqueId.toString()) - System.currentTimeMillis()) / 1000L);
 						}
-					} else if(permissionConfigUtils.getConfig().getStringList("TempRanks").contains(uuid.toString())) {
-						timedGroup = permissionConfigUtils.getConfig().getString("Ranks." + uuid.toString() + ".GroupName");
-						formattedTime = utils.formatTime((permissionConfigUtils.getConfig().getLong("Ranks." + uuid.toString() + ".Time") - System.currentTimeMillis()) / 1000L);
+					} else if(permissionConfigUtils.getConfiguration().getStringList("TempRanks").contains(targetUniqueId.toString())) {
+						timedGroup = permissionConfigUtils.getConfiguration().getString("Ranks." + targetUniqueId.toString() + ".GroupName");
+						formattedTime = utilities.formatTime((permissionConfigUtils.getConfiguration().getLong("Ranks." + targetUniqueId.toString() + ".Time") - System.currentTimeMillis()) / 1000L);
 					}
 					
 					for (PermissionGroup group : permissionUser.getGroups())
-						utils.sendConsole("§e- §a" + group.getName() + (group.getName().equalsIgnoreCase(timedGroup) ? (" §8[§d" + formattedTime + "§8]") : ""));
+						utilities.sendConsole("§e- §a" + group.getName() + (group.getName().equalsIgnoreCase(timedGroup) ? (" §8[§d" + formattedTime + "§8]") : ""));
 					
-					utils.sendConsole("§ePermissions§8:" + (permissionUser.getPermissions().isEmpty() ? " §cNone" : ""));
+					utilities.sendConsole("§ePermissions§8:" + (permissionUser.getPermissions().isEmpty() ? " §cNone" : ""));
 					
 					for (String value : permissionUser.getPermissions())
-						utils.sendConsole("§e- §a" + value);
+						utilities.sendConsole("§e- §a" + value);
 					
-					utils.sendConsole("§ePrefix§8: §f'§a" + permissionUser.getPrefix() + "§f'");
-					utils.sendConsole("§eSuffix§8: §f'§a" + permissionUser.getSuffix() + "§f'");
-					utils.sendConsole("§eChat-Prefix§8: §f'§a" + permissionUser.getChatPrefix() + "§f'");
-					utils.sendConsole("§eChat-Suffix§8: §f'§a" + permissionUser.getChatSuffix() + "§f'");
-					utils.sendConsole("§8§m----------§8 [ §6" + name + " §8] §m----------");
+					utilities.sendConsole("§ePrefix§8: §f'§a" + permissionUser.getPrefix() + "§f'");
+					utilities.sendConsole("§eSuffix§8: §f'§a" + permissionUser.getSuffix() + "§f'");
+					utilities.sendConsole("§eChat-Prefix§8: §f'§a" + permissionUser.getChatPrefix() + "§f'");
+					utilities.sendConsole("§eChat-Suffix§8: §f'§a" + permissionUser.getChatSuffix() + "§f'");
+					utilities.sendConsole("§8§m----------§8 [ §6" + targetName + " §8] §m----------");
 				} else if(args[0].equalsIgnoreCase("import")) {
 					if(args[1].equalsIgnoreCase("sql")) {
-						if(fileUtils.getConfig().getBoolean("MySQL.Enabled")) {
+						if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled")) {
 							long start = System.currentTimeMillis();
 							
 							importUtils.importFromSQL();
 							
-							utils.sendConsole("§eImported data from §aMySQL §ein §d" + (System.currentTimeMillis() - start) + "ms§7!");
+							utilities.sendConsole("§eImported data from §aMySQL §ein §d" + (System.currentTimeMillis() - start) + "ms§7!");
 						} else
-							utils.sendConsole("§cPlease enable MySQL in the config.yml and reload/restart the server§7!");
+							utilities.sendConsole("§cPlease enable MySQL in the config.yml and reload/restart the server§7!");
 					} else if(args[1].equalsIgnoreCase("file")) {
-						if(fileUtils.getConfig().getBoolean("MySQL.Enabled")) {
+						if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled")) {
 							long start = System.currentTimeMillis();
 							
 							importUtils.importFromFile();
 							
-							utils.sendConsole("§eImported data from §apermissions.yml §ein §d" + (System.currentTimeMillis() - start) + "ms§7!");
+							utilities.sendConsole("§eImported data from §apermissions.yml §ein §d" + (System.currentTimeMillis() - start) + "ms§7!");
 						} else
-							utils.sendConsole("§cPlease enable MySQL in the config.yml and reload/restart the server§7!");
+							utilities.sendConsole("§cPlease enable MySQL in the config.yml and reload/restart the server§7!");
 					} else
-						utils.sendConsole("§e/perm import «sql | file»");
+						utilities.sendConsole("§e/perm import «sql | file»");
 				} else
-					utils.sendHelpMessage(sender);
+					utilities.sendHelpMessage(sender);
 			} else if(args.length == 3) {
 				if(args[0].equalsIgnoreCase("group")) {
 					PermissionGroup permissionGroup = new PermissionGroup(args[1]);
@@ -701,15 +701,15 @@ public class PermsCommand implements CommandExecutor {
 						if(!(permissionGroup.exists())) {
 							permissionGroup.registerGroupIfNotExisting();
 							
-							utils.sendConsole("§eThe group §a" + permissionGroup.getName() + " §ewas created§7!");
+							utilities.sendConsole("§eThe group §a" + permissionGroup.getName() + " §ewas created§7!");
 						} else
-							utils.sendConsole("§cA group with the name §a" + args[1] + " §cdoes already exist§7!");
+							utilities.sendConsole("§cA group with the name §a" + args[1] + " §cdoes already exist§7!");
 					} else if(args[2].equalsIgnoreCase("delete")) {
 						if(permissionGroup.exists()) {
 							List<PermissionGroup> list = permissionGroupManager.getPermissionGroups();
 							
 							if(list.size() == 1)
-								utils.sendConsole("§cYou can not delete this group§7, §cbecause it is the last group§7!");
+								utilities.sendConsole("§cYou can not delete this group§7, §cbecause it is the last group§7!");
 							else {
 								boolean defaultGroupExists = permissionGroup.isDefault();
 								
@@ -742,32 +742,32 @@ public class PermsCommand implements CommandExecutor {
 								
 								permissionSystem.updatePrefixesAndSuffixes();
 								
-								utils.sendConsole("§cThe group §a" + permissionGroup.getName() + " §cwas deleted§7!");
+								utilities.sendConsole("§cThe group §a" + permissionGroup.getName() + " §cwas deleted§7!");
 							}
 						} else
-							utils.sendConsole("§cThe group §a" + args[1] + " §cdoes not exist§7!");
+							utilities.sendConsole("§cThe group §a" + args[1] + " §cdoes not exist§7!");
 					} else if(permissionGroup.exists()) {
 						if(args[2].equalsIgnoreCase("clear")) {
 							permissionGroup.clearPermissions();
 							
-							utils.sendConsole("§cThe permissions of the group §a" + permissionGroup.getName() + " §cwere cleared§7!");
+							utilities.sendConsole("§cThe permissions of the group §a" + permissionGroup.getName() + " §cwere cleared§7!");
 						} else
-							utils.sendHelpMessage(sender);
+							utilities.sendHelpMessage(sender);
 					} else if(!(permissionGroup.exists()))
-						utils.sendConsole("§cThe group §a" + args[1] + " §cdoes not exist§7!");
+						utilities.sendConsole("§cThe group §a" + args[1] + " §cdoes not exist§7!");
 					else
-						utils.sendHelpMessage(sender);
+						utilities.sendHelpMessage(sender);
 				} else if(args[0].equalsIgnoreCase("user")) {
 					PermissionUser permissionUser = permissionUserManager.getPermissionPlayer(args[1]);
 					
 					if(args[2].equalsIgnoreCase("clear")) {
 						permissionUser.clearPermissions();
 						
-						utils.sendConsole("§cThe permissions of the player §a" + args[1] + " §cwere cleared§7!");
+						utilities.sendConsole("§cThe permissions of the player §a" + args[1] + " §cwere cleared§7!");
 					} else
-						utils.sendHelpMessage(sender);
+						utilities.sendHelpMessage(sender);
 				} else
-					utils.sendHelpMessage(sender);
+					utilities.sendHelpMessage(sender);
 			} else if(args.length >= 4) {
 				if(args[0].equalsIgnoreCase("group")) {
 					PermissionGroup permissionGroup = new PermissionGroup(args[1]);
@@ -776,7 +776,7 @@ public class PermsCommand implements CommandExecutor {
 						if(args[2].equalsIgnoreCase("add")) {
 							permissionGroup.addPermission(args[3]);
 							
-							utils.sendConsole("§eThe permission §a" + args[3] + " §ewas added to the group §a" + permissionGroup.getName() + "§7!");
+							utilities.sendConsole("§eThe permission §a" + args[3] + " §ewas added to the group §a" + permissionGroup.getName() + "§7!");
 						} else if(args[2].equalsIgnoreCase("remove")) {
 							String permToRemove = args[3];
 							
@@ -789,7 +789,7 @@ public class PermsCommand implements CommandExecutor {
 							
 							permissionGroup.removePermission(permToRemove);
 							
-							utils.sendConsole("§cThe permission §a" + permToRemove + " §cwas removed from the group §a" + permissionGroup.getName() + "§7!");
+							utilities.sendConsole("§cThe permission §a" + permToRemove + " §cwas removed from the group §a" + permissionGroup.getName() + "§7!");
 						} else if(args[2].equalsIgnoreCase("addMember")) {
 							String name = args[3];
 							PermissionUser permissionUser = new PermissionUser(uuidFetching.fetchUUID(name));
@@ -807,7 +807,7 @@ public class PermsCommand implements CommandExecutor {
 							
 							permissionSystem.updatePrefixesAndSuffixes();
 							
-							utils.sendConsole("§eThe player §a" + args[3] + " §ewas added to the group §d" + permissionGroup.getName() + "§7!");
+							utilities.sendConsole("§eThe player §a" + args[3] + " §ewas added to the group §d" + permissionGroup.getName() + "§7!");
 						} else if(args[2].equalsIgnoreCase("removeMember")) {
 							String name = args[3];
 							permissionGroup.removeMember(name, true);
@@ -824,7 +824,7 @@ public class PermsCommand implements CommandExecutor {
 							
 							permissionSystem.updatePrefixesAndSuffixes();
 							
-							utils.sendConsole("§cThe player §a" + args[3] + " §cwas removed from the group §d" + permissionGroup.getName() + "§7!");
+							utilities.sendConsole("§cThe player §a" + args[3] + " §cwas removed from the group §d" + permissionGroup.getName() + "§7!");
 						} else if(args[2].equalsIgnoreCase("setDefault")) {
 							for (PermissionGroup group : permissionGroupManager.getPermissionGroups()) {
 								if(group != permissionGroup) {
@@ -841,7 +841,7 @@ public class PermsCommand implements CommandExecutor {
 							
 							permissionSystem.updatePrefixesAndSuffixes();
 							
-							utils.sendConsole("§eThe default group value of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
+							utilities.sendConsole("§eThe default group value of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
 						} else if(args[2].equalsIgnoreCase("setPrefix")) {
 							String value = "";
 							
@@ -856,7 +856,7 @@ public class PermsCommand implements CommandExecutor {
 							permissionGroup.setPrefix(value);
 							permissionSystem.updatePrefixesAndSuffixes();
 							
-							utils.sendConsole("§eThe prefix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
+							utilities.sendConsole("§eThe prefix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
 						} else if(args[2].equalsIgnoreCase("setChatPrefix")) {
 							String value = "";
 							
@@ -868,7 +868,7 @@ public class PermsCommand implements CommandExecutor {
 							permissionGroup.setChatPrefix(value);
 							permissionSystem.updatePrefixesAndSuffixes();
 							
-							utils.sendConsole("§eThe chat prefix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
+							utilities.sendConsole("§eThe chat prefix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
 						} else if(args[2].equalsIgnoreCase("setSuffix")) {
 							String value = "";
 							
@@ -883,7 +883,7 @@ public class PermsCommand implements CommandExecutor {
 							permissionGroup.setSuffix(value);
 							permissionSystem.updatePrefixesAndSuffixes();
 							
-							utils.sendConsole("§eThe suffix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
+							utilities.sendConsole("§eThe suffix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
 						} else if(args[2].equalsIgnoreCase("setChatSuffix")) {
 							String value = "";
 							
@@ -895,31 +895,31 @@ public class PermsCommand implements CommandExecutor {
 							permissionGroup.setChatSuffix(value);
 							permissionSystem.updatePrefixesAndSuffixes();
 							
-							utils.sendConsole("§eThe chat suffix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
+							utilities.sendConsole("§eThe chat suffix of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
 						} else if(args[2].equalsIgnoreCase("setWeight")) {
 							try {
-								int i = Integer.parseInt(args[3]);
+								int weight = Integer.parseInt(args[3]);
 								
-								if(i > 999)
-									i = 999;
+								if(weight > 999)
+									weight = 999;
 								
-								permissionGroup.setWeight(i);
+								permissionGroup.setWeight(weight);
 							} catch (NumberFormatException e) {
 								permissionGroup.setWeight(0);
 							}
 							
 							permissionSystem.updatePrefixesAndSuffixes();
 						
-							utils.sendConsole("§eThe weight of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
+							utilities.sendConsole("§eThe weight of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
 						} else if(args[2].equalsIgnoreCase("setParent")) {
 							permissionGroup.setParent(args[3].equals("none") ? null : args[3]);
 							permissionGroup.updatePermissions();
 						
-							utils.sendConsole("§eThe parent of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
+							utilities.sendConsole("§eThe parent of the group §a" + permissionGroup.getName() + " §ewas updated§7!");
 						} else
-							utils.sendHelpMessage(sender);
+							utilities.sendHelpMessage(sender);
 					} else
-						utils.sendConsole("§cThe group §a" + args[1] + " §cdoes not exist§7!");
+						utilities.sendConsole("§cThe group §a" + args[1] + " §cdoes not exist§7!");
 				} else if(args[0].equalsIgnoreCase("user")) {
 					PermissionUser permissionUser = permissionUserManager.getPermissionPlayer(args[1]);
 					
@@ -927,7 +927,7 @@ public class PermsCommand implements CommandExecutor {
 						if(args[2].equalsIgnoreCase("add")) {
 							permissionUser.addPermission(args[3]);
 							
-							utils.sendConsole("§eThe permission §a" + args[3] + " §ewas added to the player §a" + args[1] + "§7!");
+							utilities.sendConsole("§eThe permission §a" + args[3] + " §ewas added to the player §a" + args[1] + "§7!");
 						} else if(args[2].equalsIgnoreCase("remove")) {
 							String permToRemove = args[3];
 							
@@ -940,11 +940,11 @@ public class PermsCommand implements CommandExecutor {
 							
 							permissionUser.removePermission(permToRemove);
 							
-							utils.sendConsole("§cThe permission §a" + permToRemove + " §cwas removed from the player §d" + args[1] + "§7!");
+							utilities.sendConsole("§cThe permission §a" + permToRemove + " §cwas removed from the player §d" + args[1] + "§7!");
 						} else if(args[2].equalsIgnoreCase("clear")) {
 							permissionUser.clearPermissions();
 							
-							utils.sendConsole("§cThe permissions of the player §a" + args[1] + " §cwere cleared§7!");
+							utilities.sendConsole("§cThe permissions of the player §a" + args[1] + " §cwere cleared§7!");
 						} else if(args[2].equalsIgnoreCase("setgroup")) {
 							String name = args[1];
 							PermissionGroup permissionGroup = new PermissionGroup(args[3]);
@@ -980,25 +980,25 @@ public class PermsCommand implements CommandExecutor {
 										
 										UUID uuid = uuidFetching.fetchUUID(name);
 										
-										if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
+										if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled"))
 											permissionSystem.getMySQLPermissionManager().setPlayerTempGroup(uuid.toString(), permissionGroup.getName(), System.currentTimeMillis() + (time * 1000L));
 										else {
-											List<String> ranks = permissionConfigUtils.getConfig().getStringList("TempRanks");
+											List<String> ranks = permissionConfigUtils.getConfiguration().getStringList("TempRanks");
 											
 											if(!(ranks.contains(uuid.toString())))
 												ranks.add(uuid.toString());
 											
-											permissionConfigUtils.getConfig().set("TempRanks", ranks);
-											permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".GroupName", permissionGroup.getName());
-											permissionConfigUtils.getConfig().set("Ranks." + uuid.toString() + ".Time", System.currentTimeMillis() + (time * 1000L));
+											permissionConfigUtils.getConfiguration().set("TempRanks", ranks);
+											permissionConfigUtils.getConfiguration().set("Ranks." + uuid.toString() + ".GroupName", permissionGroup.getName());
+											permissionConfigUtils.getConfiguration().set("Ranks." + uuid.toString() + ".Time", System.currentTimeMillis() + (time * 1000L));
 											permissionConfigUtils.saveFile();
 										}
 										
 										permissionSystem.updatePrefixesAndSuffixes();
 										
-										utils.sendConsole("§eThe group of the player §a" + name + " §ewas set to §d" + permissionGroup.getName() + " §efor §d" + value + " " + unit + "§7!");
+										utilities.sendConsole("§eThe group of the player §a" + name + " §ewas set to §d" + permissionGroup.getName() + " §efor §d" + value + " " + unit + "§7!");
 									} else
-										utils.sendHelpMessage(sender);
+										utilities.sendHelpMessage(sender);
 								} else {
 									for (PermissionGroup group : permissionUser.getGroups())
 										group.removeMember(name, false);
@@ -1007,10 +1007,10 @@ public class PermsCommand implements CommandExecutor {
 									
 									permissionSystem.updatePrefixesAndSuffixes();
 									
-									utils.sendConsole("§eThe group of the player §a" + name + " §ewas set to §d" + permissionGroup.getName() + "§7!");
+									utilities.sendConsole("§eThe group of the player §a" + name + " §ewas set to §d" + permissionGroup.getName() + "§7!");
 								}
 							} else
-								utils.sendConsole("§cThe group §a" + args[3] + " §cdoes not exist§7!");
+								utilities.sendConsole("§cThe group §a" + args[3] + " §cdoes not exist§7!");
 						} else if(args[2].equalsIgnoreCase("setPrefix")) {
 							String value = "";
 							
@@ -1025,7 +1025,7 @@ public class PermsCommand implements CommandExecutor {
 							permissionUser.setPrefix(value);
 							permissionSystem.updatePrefixesAndSuffixes();
 							
-							utils.sendConsole("§eThe prefix of the player §a" + args[1] + " §ewas updated§7!");
+							utilities.sendConsole("§eThe prefix of the player §a" + args[1] + " §ewas updated§7!");
 						} else if(args[2].equalsIgnoreCase("setChatPrefix")) {
 							String value = "";
 							
@@ -1037,7 +1037,7 @@ public class PermsCommand implements CommandExecutor {
 							permissionUser.setChatPrefix(value);
 							permissionSystem.updatePrefixesAndSuffixes();
 							
-							utils.sendConsole("§eThe chat prefix of the player §a" + args[1] + " §ewas updated§7!");
+							utilities.sendConsole("§eThe chat prefix of the player §a" + args[1] + " §ewas updated§7!");
 						} else if(args[2].equalsIgnoreCase("setSuffix")) {
 							String value = "";
 							
@@ -1052,7 +1052,7 @@ public class PermsCommand implements CommandExecutor {
 							permissionUser.setSuffix(value);
 							permissionSystem.updatePrefixesAndSuffixes();
 							
-							utils.sendConsole("§eThe suffix of the player §a" + args[1] + " §ewas updated§7!");
+							utilities.sendConsole("§eThe suffix of the player §a" + args[1] + " §ewas updated§7!");
 						} else if(args[2].equalsIgnoreCase("setChatSuffix")) {
 							String value = "";
 							
@@ -1064,15 +1064,15 @@ public class PermsCommand implements CommandExecutor {
 							permissionUser.setChatSuffix(value);
 							permissionSystem.updatePrefixesAndSuffixes();
 							
-							utils.sendConsole("§eThe chat suffix of the player §a" + args[1] + " §ewas updated§7!");
+							utilities.sendConsole("§eThe chat suffix of the player §a" + args[1] + " §ewas updated§7!");
 						} else
-							utils.sendHelpMessage(sender);
+							utilities.sendHelpMessage(sender);
 					} else
-						utils.sendConsole("§cThe group §a" + args[1] + " §cdoes not exist§7!");
+						utilities.sendConsole("§cThe group §a" + args[1] + " §cdoes not exist§7!");
 				} else
-					utils.sendHelpMessage(sender);
+					utilities.sendHelpMessage(sender);
 			} else
-				utils.sendHelpMessage(sender);
+				utilities.sendHelpMessage(sender);
 		}
 		
 		return true;

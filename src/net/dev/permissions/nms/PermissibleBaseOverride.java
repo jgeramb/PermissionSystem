@@ -1,4 +1,4 @@
-package net.dev.permissions.utils.reflect;
+package net.dev.permissions.nms;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -9,8 +9,8 @@ import org.bukkit.permissions.*;
 
 public class PermissibleBaseOverride extends PermissibleBase {
 
-	public PermissibleBaseOverride(ServerOperator op) {
-		super(op);
+	public PermissibleBaseOverride(ServerOperator serverOperator) {
+		super(serverOperator);
 	}
 
 	@Override
@@ -43,46 +43,25 @@ public class PermissibleBaseOverride extends PermissibleBase {
 
 	@Override
 	public boolean hasPermission(Permission perm) {
-		if((hasPerm(perm.getName()) || hasPerm("*") || hasPerm("'*'")) && !(hasPerm("-" + perm.getName())))
+		if(hasPermission(perm.getName()))
 			return true;
-		
-		if (super.hasPermission("-" + perm.getName()))
-			return false;
-
-		if (super.hasPermission("*") || super.hasPermission("'*'"))
-			return true;
-		
-		if(perm.getName().contains(".")) {
-			String[] splitPermission = perm.getName().split("\\.");
-			
-			for (int i = 1; i < splitPermission.length; i++) {
-				String tempPermissionPart = "";
-				
-				for (int j = 0; j < i; j++)
-					tempPermissionPart += splitPermission[j] + ".";
-					
-				if(hasPerm(tempPermissionPart + "*"))
-					return true;
-			}
-		}
 
 		return super.hasPermission(perm);
 	}
 
 	private boolean hasPerm(String inName) {
-		if (inName == null) {
+		if (inName == null)
 			throw new IllegalArgumentException("Permission name cannot be null");
-		}
 
-		Map<String, PermissionAttachmentInfo> permissions = new HashMap<String, PermissionAttachmentInfo>();
+		Map<String, PermissionAttachmentInfo> permissions = new HashMap<>();
 
 		try {
-			Field f = PermissibleBase.class.getDeclaredField("permissions");
-			f.setAccessible(true);
-			permissions = (Map<String, PermissionAttachmentInfo>) f.get(this);
-			f.setAccessible(false);
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
+			Field permissionsField = PermissibleBase.class.getDeclaredField("permissions");
+			permissionsField.setAccessible(true);
+			permissions = (Map<String, PermissionAttachmentInfo>) permissionsField.get(this);
+			permissionsField.setAccessible(false);
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 
 		String name = inName.toLowerCase();

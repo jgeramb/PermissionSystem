@@ -1,4 +1,4 @@
-package net.dev.permissions.utils.permissionmanagement;
+package net.dev.permissions.utilities.permissionmanagement;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,9 +17,9 @@ public class PermissionUserManager {
 	}
 	
 	public PermissionUser getPermissionPlayer(String name) {
-		Player p = Bukkit.getPlayer(name);
+		Player player = Bukkit.getPlayer(name);
 		
-		return ((p != null) ? new PermissionUser(p.getUniqueId()) : new PermissionUser(permissionSystem.getUUIDFetching().fetchUUID(name)));
+		return ((player != null) ? new PermissionUser(player.getUniqueId()) : new PermissionUser(permissionSystem.getUUIDFetching().fetchUUID(name)));
 	}
 	
 	public PermissionUser getPermissionPlayer(UUID uuid) {
@@ -31,10 +31,10 @@ public class PermissionUserManager {
 	}
 
 	public List<String> getPermissionPlayerUUIDs() {
-		if(permissionSystem.getFileUtils().getConfig().getBoolean("MySQL.Enabled"))
+		if(permissionSystem.getFileUtils().getConfiguration().getBoolean("MySQL.Enabled"))
 			return permissionSystem.getMySQLPermissionManager().getUUIDCache();
 		
-		return (permissionSystem.getPermissionConfigUtils().getConfig().getStringList("Players.PlayerUUIDCache"));
+		return (permissionSystem.getPermissionConfigUtils().getConfiguration().getStringList("Players.PlayerUUIDCache"));
 	}
 	
 }

@@ -1,4 +1,4 @@
-package net.dev.permissions.utils;
+package net.dev.permissions.utilities;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,19 +7,19 @@ import java.util.*;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import net.dev.permissions.PermissionSystem;
-import net.dev.permissions.utils.permissionmanagement.PermissionGroup;
+import net.dev.permissions.utilities.permissionmanagement.PermissionGroup;
 
 public class PermissionConfigUtils {
 
 	private PermissionSystem permissionSystem;
 	
-	private File directory, file;
-	private YamlConfiguration cfg;
+	private File file;
+	private YamlConfiguration configuration;
 	
 	public PermissionConfigUtils() {
 		permissionSystem = PermissionSystem.getInstance();
 		
-		directory = new File("plugins/" + permissionSystem.getDescription().getName() + "/");
+		File directory = new File("plugins/" + permissionSystem.getDescription().getName() + "/");
 		file = new File(directory, "permissions.yml");
 		
 		if(!(directory.exists()))
@@ -32,39 +32,39 @@ public class PermissionConfigUtils {
 			}
 		}
 		
-		cfg = YamlConfiguration.loadConfiguration(file);
+		configuration = YamlConfiguration.loadConfiguration(file);
 		
 		saveFile();
 	}
 	
 	public void saveFile() {
 		try {
-			cfg.save(file);
+			configuration.save(file);
 		} catch (IOException e) {
 		}
 	}
 	
 	public void reloadConfig() {
-		cfg = YamlConfiguration.loadConfiguration(file);
+		configuration = YamlConfiguration.loadConfiguration(file);
 	}
 	
 	public void updateTempRanks() {
-		List<String> ranks = cfg.getStringList("TempRanks");
+		List<String> ranks = configuration.getStringList("TempRanks");
 		
 		for (String uuid : new ArrayList<>(ranks)) {
 			String path = "Ranks." + uuid;
 			
-			boolean hasGroupName = cfg.contains(path + ".GroupName");
-			String groupName = cfg.getString(path + ".GroupName");
+			boolean hasGroupName = configuration.contains(path + ".GroupName");
+			String groupName = configuration.getString(path + ".GroupName");
 			
-			if((cfg.getLong(path + ".Time") <= System.currentTimeMillis()) || (hasGroupName && !(permissionSystem.getPermissionUserManager().getPermissionPlayer(UUID.fromString(uuid)).getGroupNames().contains(groupName)))) {
+			if((configuration.getLong(path + ".Time") <= System.currentTimeMillis()) || (hasGroupName && !(permissionSystem.getPermissionUserManager().getPermissionPlayer(UUID.fromString(uuid)).getGroupNames().contains(groupName)))) {
 				ranks.remove(uuid);
 				
 				if(hasGroupName)
 					new PermissionGroup(groupName).removeMemberWithUUID(uuid);
 				
-				cfg.set(path, null);
-				cfg.set("TempRanks", ranks);
+				configuration.set(path, null);
+				configuration.set("TempRanks", ranks);
 				saveFile();
 				
 				permissionSystem.updatePrefixesAndSuffixes();
@@ -76,8 +76,8 @@ public class PermissionConfigUtils {
 		return file;
 	}
 	
-	public YamlConfiguration getConfig() {
-		return cfg;
+	public YamlConfiguration getConfiguration() {
+		return configuration;
 	}
 	
 }

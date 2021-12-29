@@ -9,23 +9,23 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.StringUtil;
 
 import net.dev.eazynick.api.NickManager;
 import net.dev.permissions.commands.*;
+import net.dev.permissions.hooks.*;
 import net.dev.permissions.listeners.*;
-import net.dev.permissions.placeholders.PlaceHolderExpansion;
+import net.dev.permissions.nms.*;
 import net.dev.permissions.sql.MySQL;
 import net.dev.permissions.sql.MySQLPermissionManager;
-import net.dev.permissions.utils.*;
-import net.dev.permissions.utils.fetching.*;
-import net.dev.permissions.utils.permissionmanagement.*;
-import net.dev.permissions.utils.reflect.*;
+import net.dev.permissions.utilities.*;
+import net.dev.permissions.utilities.mojang.*;
+import net.dev.permissions.utilities.permissionmanagement.*;
 import net.dev.permissions.webserver.WebFileManager;
 import net.dev.permissions.webserver.WebServerManager;
+import net.milkbowl.vault.chat.Chat;
 
 public class PermissionSystem extends JavaPlugin {
 
@@ -36,12 +36,12 @@ public class PermissionSystem extends JavaPlugin {
 	}
 	
 	private MySQLPermissionManager mysqlPermissionManager;
-	private Utils utils;
+	private Utilities utilities;
 	private FileUtils fileUtils;
 	private PermissionConfigUtils permissionConfigUtils;
 	private ImportUtils importUtils;
-	private ReflectUtils reflectUtils;
-	private TeamUtils teamUtils;
+	private ReflectionHelper reflectionHelper;
+	private ScoreboardTeamHandler scoreboardTeamHandler;
 	private PermissionGroupManager permissionGroupManager;
 	private PermissionUserManager permissionUserManager;
 	private PermissionManager permissionManager;
@@ -52,11 +52,13 @@ public class PermissionSystem extends JavaPlugin {
 	
 	private HashMap<String, String> groupNames = new HashMap<>();
 	private MySQL mysql;
-	private Field f;
-	private Timer t;
+	private Field field;
+	private Timer timer;
 	
 	private WebServerManager webServerManager;
 	private WebFileManager webFileManager;
+	
+	private Object vaultPermission, vaultChat;
 	
 	@Override
 	public void onEnable() {
@@ -64,30 +66,30 @@ public class PermissionSystem extends JavaPlugin {
 		
 		fileUtils = new FileUtils();
 		permissionConfigUtils = new PermissionConfigUtils();
-		reflectUtils = new ReflectUtils();
-		teamUtils = new TeamUtils();
+		reflectionHelper = new ReflectionHelper();
+		scoreboardTeamHandler = new ScoreboardTeamHandler();
 		permissionGroupManager = new PermissionGroupManager();
 		permissionUserManager = new PermissionUserManager();
 		permissionManager = new PermissionManager();
 
-		String version = reflectUtils.getVersion();
+		String version = reflectionHelper.getVersion();
 		
-		if(version.equals("v1_7_R4"))
+		if(version.equals("1_7_R4"))
 			uuidFetcher_1_7 = new UUIDFetcher_1_7();
-		else if(version.equals("v1_8_R1"))
+		else if(version.equals("1_8_R1"))
 			uuidFetcher_1_8_R1 = new UUIDFetcher_1_8_R1();
 		else
 			uuidFetcher = new UUIDFetcher();
 
 		uuidFetching = new UUIDFetching();
-		utils = new Utils();
+		utilities = new Utilities();
 		
 		fileUtils.reloadConfig();
 		
-		YamlConfiguration cfg = fileUtils.getConfig();
+		YamlConfiguration configuration = fileUtils.getConfiguration();
 		
-		if (cfg.getBoolean("MySQL.Enabled")) {
-			mysql = new MySQL(cfg.getString("MySQL.host"), cfg.getString("MySQL.port"), cfg.getString("MySQL.database"), cfg.getString("MySQL.user"), cfg.getString("MySQL.password"));
+		if (configuration.getBoolean("MySQL.Enabled")) {
+			mysql = new MySQL(configuration.getString("MySQL.host"), configuration.getString("MySQL.port"), configuration.getString("MySQL.database"), configuration.getString("MySQL.user"), configuration.getString("MySQL.password"));
 			mysql.connect();
 
 			mysql.update("CREATE TABLE IF NOT EXISTS PermissionUsers (uuid varchar(64) PRIMARY KEY NOT NULL, prefix varchar(64), suffix varchar(64), chat_prefix varchar(64), chat_suffix varchar(64), permissions text(32000), temp_group_name varchar(256), temp_group_time bigint)");
@@ -97,8 +99,8 @@ public class PermissionSystem extends JavaPlugin {
 			mysqlPermissionManager = new MySQLPermissionManager(mysql);
 			importUtils = new ImportUtils();
 				
-			t = new Timer();
-			t.schedule(new TimerTask() {
+			timer = new Timer();
+			timer.schedule(new TimerTask() {
 				
 				@Override
 				public void run() {
@@ -239,10 +241,10 @@ public class PermissionSystem extends JavaPlugin {
 					group.setWeight(999);
 				}
 				
-				if(cfg.getBoolean("WebServer.Enabled"))
-					webServerManager = new WebServerManager(cfg.getInt("WebServer.Port"));
+				if(configuration.getBoolean("WebServer.Enabled"))
+					webServerManager = new WebServerManager(configuration.getInt("WebServer.Port"));
 				
-				if (cfg.getBoolean("Settings.UsePrefixesAndSuffixes")) {
+				if (configuration.getBoolean("Settings.UsePrefixesAndSuffixes")) {
 					updatePrefixesAndSuffixes();
 					
 					Bukkit.getScheduler().scheduleSyncRepeatingTask(instance, new Runnable() {
@@ -254,16 +256,16 @@ public class PermissionSystem extends JavaPlugin {
 									NickManager api = new NickManager(all);
 
 									if (!(api.isNicked()))
-										teamUtils.addPlayerToTeam(teamUtils.getTeamName(all), all.getName());
+										scoreboardTeamHandler.addPlayerToTeam(scoreboardTeamHandler.getTeamName(all), all.getName());
 									else
-										teamUtils.removePlayerFromTeams(api.getRealName());
+										scoreboardTeamHandler.removePlayerFromTeams(api.getRealName());
 								} else
-									teamUtils.addPlayerToTeam(teamUtils.getTeamName(all), all.getName());
+									scoreboardTeamHandler.addPlayerToTeam(scoreboardTeamHandler.getTeamName(all), all.getName());
 							}
 
-							teamUtils.updateTeams();
+							scoreboardTeamHandler.updateTeams();
 
-							if(cfg.getBoolean("MySQL.Enabled")) {
+							if(configuration.getBoolean("MySQL.Enabled")) {
 								for(String uuid : mysqlPermissionManager.getUUIDCache()) {
 									String tempGroupName = mysqlPermissionManager.getPlayerTempGroupName(uuid);
 									
@@ -286,38 +288,53 @@ public class PermissionSystem extends JavaPlugin {
 		if(isPlaceholderAPIInstalled())
 			new PlaceHolderExpansion(instance).register();
 		
-		utils.sendConsole("§eThe system has been enabled§7!");
+		if(isVaultInstalled()) {
+			vaultPermission = new VaultPermissionHandler(this);
+			vaultChat = new VaultChatHandler(this, (net.milkbowl.vault.permission.Permission) vaultPermission);
+			
+			ServicesManager servicesManager = Bukkit.getServicesManager();
+	        servicesManager.register(net.milkbowl.vault.permission.Permission.class, (net.milkbowl.vault.permission.Permission) vaultPermission, this, ServicePriority.High);
+	        servicesManager.register(net.milkbowl.vault.chat.Chat.class, (net.milkbowl.vault.chat.Chat) vaultChat, this, ServicePriority.High);   
+		}
+		
+		utilities.sendConsole("§eThe system has been enabled§7!");
 	}
 
 	@Override
 	public void onDisable() {
-		if(t != null)
-			t.cancel();
+		if(timer != null)
+			timer.cancel();
 		
 		if(webServerManager != null)
 			webServerManager.stop();
 		
-		if (fileUtils.getConfig().getBoolean("Settings.UsePrefixesAndSuffixes")) {
-			for (String team : teamUtils.getTeamMembers().keySet()) {
+		if (fileUtils.getConfiguration().getBoolean("Settings.UsePrefixesAndSuffixes")) {
+			for (String team : scoreboardTeamHandler.getTeamMembers().keySet()) {
 				if (team != null)
-					teamUtils.destroyTeam(team);
+					scoreboardTeamHandler.destroyTeam(team);
 			}
 		}
 		
 		permissionConfigUtils.saveFile();
 		
-		utils.sendConsole("§cThe system has been disabled§7!");
+		if(isVaultInstalled()) {
+			ServicesManager servicesManager = Bukkit.getServicesManager();
+			servicesManager.unregister(net.milkbowl.vault.permission.Permission.class, vaultPermission);
+	        servicesManager.unregister(Chat.class, vaultChat);
+		}
+		
+		utilities.sendConsole("§cThe system has been disabled§7!");
 	}
 
 	public void updatePrefixesAndSuffixes() {
-		if (fileUtils.getConfig().getBoolean("Settings.UsePrefixesAndSuffixes")) {
-			teamUtils.setTeamMembers(new HashMap<>());
-			teamUtils.setTeamPrefixes(new HashMap<>());
-			teamUtils.setTeamPrefixesChat(new HashMap<>());
-			teamUtils.setTeamPrefixesPlayerList(new HashMap<>());
-			teamUtils.setTeamSuffixes(new HashMap<>());
-			teamUtils.setTeamSuffixesChat(new HashMap<>());
-			teamUtils.setTeamSuffixesPlayerList(new HashMap<>());
+		if (fileUtils.getConfiguration().getBoolean("Settings.UsePrefixesAndSuffixes")) {
+			scoreboardTeamHandler.setTeamMembers(new HashMap<>());
+			scoreboardTeamHandler.setTeamPrefixes(new HashMap<>());
+			scoreboardTeamHandler.setTeamPrefixesChat(new HashMap<>());
+			scoreboardTeamHandler.setTeamPrefixesPlayerList(new HashMap<>());
+			scoreboardTeamHandler.setTeamSuffixes(new HashMap<>());
+			scoreboardTeamHandler.setTeamSuffixesChat(new HashMap<>());
+			scoreboardTeamHandler.setTeamSuffixesPlayerList(new HashMap<>());
 			
 			for (PermissionGroup group : permissionGroupManager.getPermissionGroups()) {
 				group.registerGroupIfNotExisting();
@@ -347,28 +364,28 @@ public class PermissionSystem extends JavaPlugin {
 					suffix = suffix.substring(0, 16);
 				
 				groupNames.put(name, rankName);
-				teamUtils.getTeamMembers().put(rankName, new ArrayList<>());
-				teamUtils.getTeamPrefixes().put(rankName, prefix);
-				teamUtils.getTeamPrefixesChat().put(rankName, chatPrefix);
-				teamUtils.getTeamPrefixesPlayerList().put(rankName, prefix);
-				teamUtils.getTeamSuffixes().put(rankName, suffix);
-				teamUtils.getTeamSuffixesChat().put(rankName, chatSuffix);
-				teamUtils.getTeamSuffixesPlayerList().put(rankName, suffix);
+				scoreboardTeamHandler.getTeamMembers().put(rankName, new ArrayList<>());
+				scoreboardTeamHandler.getTeamPrefixes().put(rankName, prefix);
+				scoreboardTeamHandler.getTeamPrefixesChat().put(rankName, chatPrefix);
+				scoreboardTeamHandler.getTeamPrefixesPlayerList().put(rankName, prefix);
+				scoreboardTeamHandler.getTeamSuffixes().put(rankName, suffix);
+				scoreboardTeamHandler.getTeamSuffixesChat().put(rankName, chatSuffix);
+				scoreboardTeamHandler.getTeamSuffixesPlayerList().put(rankName, suffix);
 				
-				utils.sendDebugMessage("§eTeam of group §a" + name + " §eis §d" + rankName + "§7!");
+				utilities.sendDebugMessage("§eTeam of group §a" + name + " §eis §d" + rankName + "§7!");
 			}
 
-			for (Player p : Bukkit.getOnlinePlayers()) {
-				PermissionUser user = permissionUserManager.getPermissionPlayer(p.getName());
+			for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+				PermissionUser user = permissionUserManager.getPermissionPlayer(onlinePlayer.getName());
 				PermissionGroup group = user.getHighestGroup();
 				String rankWeight = String.valueOf(group.getWeight());
 
 				for (int i = 1; i < (3 - String.valueOf(group.getWeight()).length()); i++) {
-					if((rankWeight + p.getName()).length() < 16)
+					if((rankWeight + onlinePlayer.getName()).length() < 16)
 						rankWeight = "0" + rankWeight;
 				}
 				
-				String rankName = rankWeight + p.getName();
+				String rankName = rankWeight + onlinePlayer.getName();
 				String prefix = user.getPrefix() + user.getGroupPrefix();
 				String chatPrefix = user.getChatPrefix() + user.getGroupChatPrefix();
 				String suffix = user.getGroupSuffix() + user.getSuffix();
@@ -383,27 +400,27 @@ public class PermissionSystem extends JavaPlugin {
 				if(suffix.length() > 16)
 					suffix = suffix.substring(0, 16);
 				
-				teamUtils.getTeamMembers().put(rankName, new ArrayList<>());
-				teamUtils.getTeamPrefixes().put(rankName, prefix);
-				teamUtils.getTeamPrefixesChat().put(rankName, chatPrefix);
-				teamUtils.getTeamPrefixesPlayerList().put(rankName, prefix);
-				teamUtils.getTeamSuffixes().put(rankName, suffix);
-				teamUtils.getTeamSuffixesChat().put(rankName, chatSuffix);
-				teamUtils.getTeamSuffixesPlayerList().put(rankName, suffix);
+				scoreboardTeamHandler.getTeamMembers().put(rankName, new ArrayList<>());
+				scoreboardTeamHandler.getTeamPrefixes().put(rankName, prefix);
+				scoreboardTeamHandler.getTeamPrefixesChat().put(rankName, chatPrefix);
+				scoreboardTeamHandler.getTeamPrefixesPlayerList().put(rankName, prefix);
+				scoreboardTeamHandler.getTeamSuffixes().put(rankName, suffix);
+				scoreboardTeamHandler.getTeamSuffixesChat().put(rankName, chatSuffix);
+				scoreboardTeamHandler.getTeamSuffixesPlayerList().put(rankName, suffix);
 				
-				utils.sendDebugMessage("§eTeam of player §a" + p.getName() + " §eis §d" + rankName + "§7!");
+				utilities.sendDebugMessage("§eTeam of player §a" + onlinePlayer.getName() + " §eis §d" + rankName + "§7!");
 			}
 		}
 	}
 	
-	public void inject(Player p) {
+	public void inject(Player player) {
 		try {
-			if(f == null)
-				f = Class.forName("org.bukkit.craftbukkit." + reflectUtils.getVersion() + ".entity.CraftHumanEntity").getDeclaredField("perm");
+			if(field == null)
+				field = Class.forName("org.bukkit.craftbukkit.v" + reflectionHelper.getVersion() + ".entity.CraftHumanEntity").getDeclaredField("perm");
 			
-			f.setAccessible(true);
-			f.set(p, new PermissibleBaseOverride(p));
-			f.setAccessible(false);
+			field.setAccessible(true);
+			field.set(player, new PermissibleBaseOverride(player));
+			field.setAccessible(false);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -421,6 +438,10 @@ public class PermissionSystem extends JavaPlugin {
 	
 	public boolean isPlaceholderAPIInstalled() {
 		return (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null);
+	}
+	
+	public boolean isVaultInstalled() {
+		return (Bukkit.getPluginManager().getPlugin("Vault") != null);
 	}
 	
 	public HashMap<String, String> getGroupNames() {
@@ -443,8 +464,8 @@ public class PermissionSystem extends JavaPlugin {
 		return mysqlPermissionManager;
 	}
 	
-	public Utils getUtils() {
-		return utils;
+	public Utilities getUtils() {
+		return utilities;
 	}
 	
 	public FileUtils getFileUtils() {
@@ -459,12 +480,12 @@ public class PermissionSystem extends JavaPlugin {
 		return importUtils;
 	}
 	
-	public TeamUtils getTeamUtils() {
-		return teamUtils;
+	public ScoreboardTeamHandler getScoreboardTeamHandler() {
+		return scoreboardTeamHandler;
 	}
 	
-	public ReflectUtils getReflectUtils() {
-		return reflectUtils;
+	public ReflectionHelper getReflectionHelper() {
+		return reflectionHelper;
 	}
 	
 	public PermissionGroupManager getPermissionGroupManager() {

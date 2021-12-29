@@ -1,4 +1,4 @@
-package net.dev.permissions.utils.permissionmanagement;
+package net.dev.permissions.utilities.permissionmanagement;
 
 import java.util.*;
 
@@ -9,13 +9,13 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import net.dev.permissions.PermissionSystem;
 import net.dev.permissions.sql.MySQLPermissionManager;
-import net.dev.permissions.utils.*;
-import net.dev.permissions.utils.fetching.UUIDFetching;
+import net.dev.permissions.utilities.*;
+import net.dev.permissions.utilities.mojang.UUIDFetching;
 
 public class PermissionUser {
 
 	private PermissionSystem permissionSystem;
-	private Utils utils;
+	private Utilities utilities;
 	private FileUtils fileUtils;
 	private PermissionConfigUtils permissionConfigUtils;
 	private MySQLPermissionManager mysqlPermissionManager;
@@ -29,7 +29,7 @@ public class PermissionUser {
 		this.uuid = uuid.toString();
 		
 		this.permissionSystem = PermissionSystem.getInstance();
-		this.utils = permissionSystem.getUtils();
+		this.utilities = permissionSystem.getUtils();
 		this.fileUtils = permissionSystem.getFileUtils();
 		this.permissionConfigUtils = permissionSystem.getPermissionConfigUtils();
 		this.mysqlPermissionManager = permissionSystem.getMySQLPermissionManager();
@@ -41,31 +41,31 @@ public class PermissionUser {
 	}
 	
 	public boolean exists() {
-		if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
+		if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled"))
 			return mysqlPermissionManager.isUUIDInCache(uuid);
 		
-		return (permissionConfigUtils.getConfig().get("Players." + uuid) != null);
+		return (permissionConfigUtils.getConfiguration().get("Players." + uuid) != null);
 	}
 	
 	public void addPermission(String permission) {
 		List<String> list;
 		
-		if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
+		if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled"))
 			list = mysqlPermissionManager.getPlayerPermissions(uuid);
 		else
-			list = permissionConfigUtils.getConfig().getStringList("Players." + uuid + ".Permissions");
+			list = permissionConfigUtils.getConfiguration().getStringList("Players." + uuid + ".Permissions");
 		
 		if(!(list.contains(permission.toLowerCase())))
 			list.add(permission.toLowerCase());
 		
-		if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
+		if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled"))
 			mysqlPermissionManager.setPlayerPermissions(uuid, list.toString());
 		else {
-			permissionConfigUtils.getConfig().set("Players." + uuid + ".Permissions", list);
+			permissionConfigUtils.getConfiguration().set("Players." + uuid + ".Permissions", list);
 			permissionConfigUtils.saveFile();
 		}
 		
-		utils.sendDebugMessage("§eAdded permission §a\"" + permission + "\" §eto player §d" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + "§7!");
+		utilities.sendDebugMessage("§eAdded permission §a\"" + permission + "\" §eto player §d" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + "§7!");
 			
 		updatePermissions();
 	}
@@ -73,55 +73,55 @@ public class PermissionUser {
 	public void removePermission(String permission) {
 		List<String> list;
 		
-		if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
+		if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled"))
 			list = mysqlPermissionManager.getPlayerPermissions(uuid);
 		else
-			list = permissionConfigUtils.getConfig().getStringList("Players." + uuid + ".Permissions");
+			list = permissionConfigUtils.getConfiguration().getStringList("Players." + uuid + ".Permissions");
 				
 		if(list.contains(permission.toLowerCase()))
 			list.remove(permission.toLowerCase());
 		
-		if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
+		if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled"))
 			mysqlPermissionManager.setPlayerPermissions(uuid, list.toString());
 		else {
-			permissionConfigUtils.getConfig().set("Players." + uuid + ".Permissions", list);
+			permissionConfigUtils.getConfiguration().set("Players." + uuid + ".Permissions", list);
 			permissionConfigUtils.saveFile();
 		}
 		
-		utils.sendDebugMessage("§eRemoved permission §a\"" + permission + "\" §efrom player §d" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + "§7!");
+		utilities.sendDebugMessage("§eRemoved permission §a\"" + permission + "\" §efrom player §d" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + "§7!");
 		
 		updatePermissions();
 	}
 	
 	public void clearPermissions() {
-		if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
+		if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled"))
 			mysqlPermissionManager.setPlayerPermissions(uuid, new ArrayList<>().toString());
 		else {
-			permissionConfigUtils.getConfig().set("Players." + uuid + ".Permissions", new ArrayList<String>());
+			permissionConfigUtils.getConfiguration().set("Players." + uuid + ".Permissions", new ArrayList<String>());
 			permissionConfigUtils.saveFile();
 		}
 		
-		utils.sendDebugMessage("§eCleared permissions of player §a" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + "§7!");
+		utilities.sendDebugMessage("§eCleared permissions of player §a" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + "§7!");
 		
 		updatePermissions();
 	}
 	
 	public List<String> getPermissions() {
-		if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
+		if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled"))
 			return mysqlPermissionManager.getPlayerPermissions(uuid);
 		
-		return permissionConfigUtils.getConfig().getStringList("Players." + uuid + ".Permissions");
+		return permissionConfigUtils.getConfiguration().getStringList("Players." + uuid + ".Permissions");
 	}
 	
 	public void updatePermissions() {
 		if(permissionUserManager.getPlayerByUUID(uuid) != null) {
-			Player p = permissionUserManager.getPlayerByUUID(uuid);
-			p.getEffectivePermissions().clear();
+			Player player = permissionUserManager.getPlayerByUUID(uuid);
+			player.getEffectivePermissions().clear();
 			
-			PermissionAttachment pa = utils.getAttachments().containsKey(p.getUniqueId()) ? utils.getAttachments().get(p.getUniqueId()) : p.addAttachment(permissionSystem);
+			PermissionAttachment pa = utilities.getAttachments().containsKey(player.getUniqueId()) ? utilities.getAttachments().get(player.getUniqueId()) : player.addAttachment(permissionSystem);
 
-			for(PermissionAttachmentInfo info : p.getEffectivePermissions()) {
-				if(p.hasPermission(info.getPermission()))
+			for(PermissionAttachmentInfo info : player.getEffectivePermissions()) {
+				if(player.hasPermission(info.getPermission()))
 					pa.setPermission(info.getPermission(), false);
 			}
 			
@@ -150,26 +150,26 @@ public class PermissionUser {
 				pa.setPermission("group." + permissionGroup.getName().toLowerCase(), true);
 			}
 			
-			p.recalculatePermissions();
+			player.recalculatePermissions();
 		}
 	}
 	
 	public void registerPlayerIfNotExisting() {
 		if(!(exists())) {
-			if(fileUtils.getConfig().getBoolean("MySQL.Enabled")) {
+			if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled")) {
 				mysqlPermissionManager.saveToUUIDCache(uuid);
 				mysqlPermissionManager.setPlayerPermissions(uuid, "[]");
 				mysqlPermissionManager.setValues(new HashMap<>());
 				mysqlPermissionManager.collectUserData();
 				mysqlPermissionManager.collectGroupData();
 			} else {
-				List<String> players = permissionConfigUtils.getConfig().getStringList("Players.PlayerUUIDCache");
+				List<String> players = permissionConfigUtils.getConfiguration().getStringList("Players.PlayerUUIDCache");
 				
 				if(!(players.contains(uuid)))
 					players.add(uuid);
 				
-				permissionConfigUtils.getConfig().set("Players.PlayerUUIDCache", players);
-				permissionConfigUtils.getConfig().set("Players." + uuid + ".Permissions", new ArrayList<String>());
+				permissionConfigUtils.getConfiguration().set("Players.PlayerUUIDCache", players);
+				permissionConfigUtils.getConfiguration().set("Players." + uuid + ".Permissions", new ArrayList<String>());
 				permissionConfigUtils.saveFile();
 			}
 		
@@ -178,7 +178,7 @@ public class PermissionUser {
 			setSuffix("");
 			setChatSuffix("");
 			
-			utils.sendDebugMessage("§ePlayer §a" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + " §ewas registered§7!");
+			utilities.sendDebugMessage("§ePlayer §a" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + " §ewas registered§7!");
 		}
 		
 		if(getGroups().isEmpty() && !(permissionGroupManager.getPermissionGroups().isEmpty())) {
@@ -217,69 +217,69 @@ public class PermissionUser {
 	}
 
 	public void setPrefix(String value) {
-		if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
+		if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled"))
 			mysqlPermissionManager.setPlayerPrefix(uuid, value);
 		else {
-			permissionConfigUtils.getConfig().set("Players." + uuid + ".Options.Prefix", value);
+			permissionConfigUtils.getConfiguration().set("Players." + uuid + ".Options.Prefix", value);
 			permissionConfigUtils.saveFile();
 		}
 		
-		utils.sendDebugMessage("§eThe value of the option §aPrefix §eof player §d" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + " §ewas updated§8: §f" + ChatColor.translateAlternateColorCodes('&', value));
+		utilities.sendDebugMessage("§eThe value of the option §aPrefix §eof player §d" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + " §ewas updated§8: §f" + ChatColor.translateAlternateColorCodes('&', value));
 	}
 	
 	public void setChatPrefix(String value) {
-		if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
+		if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled"))
 			mysqlPermissionManager.setPlayerChatPrefix(uuid, value);
 		else {
-			permissionConfigUtils.getConfig().set("Players." + uuid + ".Options.ChatPrefix", value);
+			permissionConfigUtils.getConfiguration().set("Players." + uuid + ".Options.ChatPrefix", value);
 			permissionConfigUtils.saveFile();
 		}
 		
-		utils.sendDebugMessage("§eThe value of the option §aChatPrefix §eof player §d" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + " §ewas updated§8: §f" + ChatColor.translateAlternateColorCodes('&', value));
+		utilities.sendDebugMessage("§eThe value of the option §aChatPrefix §eof player §d" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + " §ewas updated§8: §f" + ChatColor.translateAlternateColorCodes('&', value));
 	}
 	
 	public void setSuffix(String value) {
-		if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
+		if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled"))
 			mysqlPermissionManager.setPlayerSuffix(uuid, value);
 		else {
-			permissionConfigUtils.getConfig().set("Players." + uuid + ".Options.Suffix", value);
+			permissionConfigUtils.getConfiguration().set("Players." + uuid + ".Options.Suffix", value);
 			permissionConfigUtils.saveFile();
 		}
 		
-		utils.sendDebugMessage("§eThe value of the option §aSuffix §eof player §d" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + " §ewas updated§8: §f" + ChatColor.translateAlternateColorCodes('&', value));
+		utilities.sendDebugMessage("§eThe value of the option §aSuffix §eof player §d" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + " §ewas updated§8: §f" + ChatColor.translateAlternateColorCodes('&', value));
 	}
 	
 	public void setChatSuffix(String value) {
-		if(fileUtils.getConfig().getBoolean("MySQL.Enabled"))
+		if(fileUtils.getConfiguration().getBoolean("MySQL.Enabled"))
 			mysqlPermissionManager.setPlayerChatSuffix(uuid, value);
 		else {
-			permissionConfigUtils.getConfig().set("Players." + uuid + ".Options.ChatSuffix", value);
+			permissionConfigUtils.getConfiguration().set("Players." + uuid + ".Options.ChatSuffix", value);
 			permissionConfigUtils.saveFile();
 		}
 	
-		utils.sendDebugMessage("§eThe value of the option §aChatSuffix §eof player §d" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + " §ewas updated§8: §f" + ChatColor.translateAlternateColorCodes('&', value));
+		utilities.sendDebugMessage("§eThe value of the option §aChatSuffix §eof player §d" + uuidFetching.fetchName(UUID.fromString(uuid)) + "/" + uuid + " §ewas updated§8: §f" + ChatColor.translateAlternateColorCodes('&', value));
 	}
 	
 	public String getPrefix() {
-		String s = fileUtils.getConfig().getBoolean("MySQL.Enabled") ? mysqlPermissionManager.getPlayerPrefix(uuid) : permissionConfigUtils.getConfig().getString("Players." + uuid + ".Options.Prefix");
+		String s = fileUtils.getConfiguration().getBoolean("MySQL.Enabled") ? mysqlPermissionManager.getPlayerPrefix(uuid) : permissionConfigUtils.getConfiguration().getString("Players." + uuid + ".Options.Prefix");
 		
 		return ((s != null) ? ChatColor.translateAlternateColorCodes('&', s) : null);
 	}
 	
 	public String getChatPrefix() {
-		String s = fileUtils.getConfig().getBoolean("MySQL.Enabled") ? mysqlPermissionManager.getPlayerChatPrefix(uuid) : permissionConfigUtils.getConfig().getString("Players." + uuid + ".Options.ChatPrefix");
+		String s = fileUtils.getConfiguration().getBoolean("MySQL.Enabled") ? mysqlPermissionManager.getPlayerChatPrefix(uuid) : permissionConfigUtils.getConfiguration().getString("Players." + uuid + ".Options.ChatPrefix");
 		
 		return ((s != null) ? ChatColor.translateAlternateColorCodes('&', s) : null);
 	}
 	
 	public String getSuffix() {
-		String s = fileUtils.getConfig().getBoolean("MySQL.Enabled") ? mysqlPermissionManager.getPlayerSuffix(uuid) : permissionConfigUtils.getConfig().getString("Players." + uuid + ".Options.Suffix");
+		String s = fileUtils.getConfiguration().getBoolean("MySQL.Enabled") ? mysqlPermissionManager.getPlayerSuffix(uuid) : permissionConfigUtils.getConfiguration().getString("Players." + uuid + ".Options.Suffix");
 		
 		return ((s != null) ? ChatColor.translateAlternateColorCodes('&', s) : null);
 	}
 	
 	public String getChatSuffix() {
-		String s = fileUtils.getConfig().getBoolean("MySQL.Enabled") ? mysqlPermissionManager.getPlayerChatSuffix(uuid) : permissionConfigUtils.getConfig().getString("Players." + uuid + ".Options.ChatSuffix");
+		String s = fileUtils.getConfiguration().getBoolean("MySQL.Enabled") ? mysqlPermissionManager.getPlayerChatSuffix(uuid) : permissionConfigUtils.getConfiguration().getString("Players." + uuid + ".Options.ChatSuffix");
 		
 		return ((s != null) ? ChatColor.translateAlternateColorCodes('&', s) : null);
 	}

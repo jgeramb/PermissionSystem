@@ -1,4 +1,4 @@
-package net.dev.permissions.utils.reflect;
+package net.dev.permissions.nms;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 import org.bukkit.Bukkit;
 
-public class ReflectUtils {
+public class ReflectionHelper {
 
 	public void setField(Class<?> clazz, String fieldName, Object value) throws IllegalArgumentException, IllegalAccessException {
 		Field f = getField(clazz, fieldName);
@@ -57,7 +57,9 @@ public class ReflectUtils {
 
 	public Class<?> getNMSClass(String className) {
 		try {
-			return Class.forName(getVersion().startsWith("v1_17") ? ("net.minecraft." + className) : ("net.minecraft.server." + getVersion() + "." + className));
+			String version = getVersion();
+			
+			return Class.forName((version.startsWith("1_17") || version.startsWith("1_18")) ? ("net.minecraft." + className) : ("net.minecraft.server." + version + "." + className));
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -67,7 +69,7 @@ public class ReflectUtils {
 	
 	public Class<?> getCraftClass(String className) {
 		try {
-			return Class.forName("org.bukkit.craftbukkit." + getVersion() + "." + className);
+			return Class.forName("org.bukkit.craftbukkit.v" + getVersion() + "." + className);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -76,12 +78,14 @@ public class ReflectUtils {
 	}
 	
 	public String getVersion() {
-		return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+		return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3].substring(1);
 	}
 	
 	public boolean isNewVersion() {
-		return (Integer.parseInt(getVersion().substring(1).split("_")[1]) > 12);
+		return (Integer.parseInt(getVersion().split("_")[1]) > 12);
 	}
+	
+	/* Only for debugging purposes */
 	
 	public void debugObject(Object obj) {
 		Class<?> clazz = obj.getClass();

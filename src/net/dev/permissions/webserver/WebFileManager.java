@@ -10,8 +10,8 @@ import java.util.*;
 import org.bukkit.Bukkit;
 
 import net.dev.permissions.PermissionSystem;
-import net.dev.permissions.utils.permissionmanagement.PermissionGroup;
-import net.dev.permissions.utils.permissionmanagement.PermissionUser;
+import net.dev.permissions.utilities.permissionmanagement.PermissionGroup;
+import net.dev.permissions.utilities.permissionmanagement.PermissionUser;
 
 import lib.com.sun.net.httpserver.*;
 
@@ -25,7 +25,7 @@ public class WebFileManager implements HttpHandler {
 		
 		webServerDirectory = new File("plugins/" + permissionSystem.getDescription().getName() + "/htdocs/");
 		
-		if(permissionSystem.getFileUtils().getConfig().getBoolean("WebServer.DeleteFiles")) {
+		if(permissionSystem.getFileUtils().getConfiguration().getBoolean("WebServer.DeleteFiles")) {
 			try {
 				Runtime.getRuntime().exec(new String[] { "rd", "/s", "/q", webServerDirectory.getAbsolutePath() });
 			} catch (IOException ex) {

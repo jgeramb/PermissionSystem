@@ -1,4 +1,4 @@
-package net.dev.permissions.utils.permissionmanagement;
+package net.dev.permissions.utilities.permissionmanagement;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

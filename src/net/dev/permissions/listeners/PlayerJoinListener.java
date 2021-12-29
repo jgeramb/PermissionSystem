@@ -6,30 +6,30 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 import net.dev.eazynick.api.NickManager;
 import net.dev.permissions.PermissionSystem;
-import net.dev.permissions.utils.permissionmanagement.PermissionUser;
-import net.dev.permissions.utils.reflect.TeamUtils;
+import net.dev.permissions.nms.ScoreboardTeamHandler;
+import net.dev.permissions.utilities.permissionmanagement.PermissionUser;
 
 public class PlayerJoinListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST)
-	public void onPlayerJoin(PlayerJoinEvent e) {
+	public void onPlayerJoin(PlayerJoinEvent event) {
 		PermissionSystem permissionSystem = PermissionSystem.getInstance();
-		TeamUtils teamUtils = permissionSystem.getTeamUtils();
+		ScoreboardTeamHandler scoreboardTeamHandler = permissionSystem.getScoreboardTeamHandler();
 		
-		Player p = e.getPlayer();
+		Player player = event.getPlayer();
 		
-		PermissionSystem.getInstance().inject(p);
+		PermissionSystem.getInstance().inject(player);
 		
-		new PermissionUser(p.getUniqueId()).updatePermissions();
+		new PermissionUser(player.getUniqueId()).updatePermissions();
 		
 		permissionSystem.updatePrefixesAndSuffixes();
 
-		if (permissionSystem.getFileUtils().getConfig().getBoolean("Settings.UsePrefixesAndSuffixes")) {
+		if (permissionSystem.getFileUtils().getConfiguration().getBoolean("Settings.UsePrefixesAndSuffixes")) {
 			if (permissionSystem.isEazyNickInstalled()) {
-				if (!(new NickManager(p).isNicked()))
-					teamUtils.addPlayerToTeam(teamUtils.getTeamName(p), p.getName());
+				if (!(new NickManager(player).isNicked()))
+					scoreboardTeamHandler.addPlayerToTeam(scoreboardTeamHandler.getTeamName(player), player.getName());
 			} else
-				teamUtils.addPlayerToTeam(teamUtils.getTeamName(p), p.getName());
+				scoreboardTeamHandler.addPlayerToTeam(scoreboardTeamHandler.getTeamName(player), player.getName());
 		}
 	}
 

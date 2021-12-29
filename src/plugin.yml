@@ -1,8 +1,9 @@
 name: PermissionSystem
-version: 4.7
+version: 4.9
 author: Justix
 main: net.dev.permissions.PermissionSystem
-soft-depend: [EazyNick, Clans, ClansAPI, PlaceholderAPI]
+softdepend: [EazyNick, Clans, ClansAPI, PlaceholderAPI, Vault]
+api-version: 1.13
 
 commands:
   perms:

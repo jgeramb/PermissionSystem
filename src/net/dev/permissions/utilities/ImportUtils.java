@@ -1,11 +1,11 @@
-package net.dev.permissions.utils;
+package net.dev.permissions.utilities;
 
 import java.util.*;
 
 import net.dev.permissions.PermissionSystem;
 import net.dev.permissions.sql.MySQL;
 import net.dev.permissions.sql.MySQLPermissionManager;
-import net.dev.permissions.utils.permissionmanagement.*;
+import net.dev.permissions.utilities.permissionmanagement.*;
 
 public class ImportUtils {
 
@@ -53,7 +53,7 @@ public class ImportUtils {
 			List<String> permissions = group.getPermissions();
 			List<String> members = group.getMemberUUIDs();
 			
-			fileUtils.getConfig().set("MySQL.Enabled", false);
+			fileUtils.getConfiguration().set("MySQL.Enabled", false);
 			
 			PermissionGroup fileGroup = new PermissionGroup(groupName);
 			fileGroup.registerGroupIfNotExisting();
@@ -74,19 +74,19 @@ public class ImportUtils {
 			fileGroup.setDefault(isDefault);
 			fileGroup.setParent(parent);
 			
-			permissionConfigUtils.getConfig().set("Groups." + groupName + ".Permissions", permissions);
-			permissionConfigUtils.getConfig().set("Groups." + groupName + ".Members", members);
+			permissionConfigUtils.getConfiguration().set("Groups." + groupName + ".Permissions", permissions);
+			permissionConfigUtils.getConfiguration().set("Groups." + groupName + ".Members", members);
 			
-			fileUtils.getConfig().set("MySQL.Enabled", true);
+			fileUtils.getConfiguration().set("MySQL.Enabled", true);
 		}
 		
 		for (String uuid : uuids) {
-			List<String> players = permissionConfigUtils.getConfig().getStringList("Players.PlayerUUIDCache");
+			List<String> players = permissionConfigUtils.getConfiguration().getStringList("Players.PlayerUUIDCache");
 			
 			if(!(players.contains(uuid)))
 				players.add(uuid);
 			
-			permissionConfigUtils.getConfig().set("Players.PlayerUUIDCache", players);
+			permissionConfigUtils.getConfiguration().set("Players.PlayerUUIDCache", players);
 			permissionConfigUtils.saveFile();
 			
 			PermissionUser user = permissionUserManager.getPermissionPlayer(UUID.fromString(uuid));
@@ -98,7 +98,7 @@ public class ImportUtils {
 			String tempGroupName = mysqlPermissionManager.getPlayerTempGroupName(uuid);
 			long tempGroupTime = mysqlPermissionManager.getPlayerTempGroupTime(uuid);
 			
-			fileUtils.getConfig().set("MySQL.Enabled", false);
+			fileUtils.getConfiguration().set("MySQL.Enabled", false);
 			
 			PermissionUser fileUser = new PermissionUser(UUID.fromString(uuid));
 			
@@ -114,20 +114,20 @@ public class ImportUtils {
 			if(chatSuffix != null)
 				fileUser.setChatSuffix(chatSuffix);
 			
-			permissionConfigUtils.getConfig().set("Players." + uuid + ".Permissions", permissions);
+			permissionConfigUtils.getConfiguration().set("Players." + uuid + ".Permissions", permissions);
 			
 			if(tempGroupName != null) {
-				List<String> ranks = permissionConfigUtils.getConfig().getStringList("TempRanks");
+				List<String> ranks = permissionConfigUtils.getConfiguration().getStringList("TempRanks");
 				
 				if(!(ranks.contains(uuid)))
 					ranks.add(uuid);
 				
-				permissionConfigUtils.getConfig().set("TempRanks", ranks);
-				permissionConfigUtils.getConfig().set("Ranks." + uuid + ".GroupName", tempGroupName);
-				permissionConfigUtils.getConfig().set("Ranks." + uuid + ".Time", tempGroupTime);
+				permissionConfigUtils.getConfiguration().set("TempRanks", ranks);
+				permissionConfigUtils.getConfiguration().set("Ranks." + uuid + ".GroupName", tempGroupName);
+				permissionConfigUtils.getConfiguration().set("Ranks." + uuid + ".Time", tempGroupTime);
 			}
 			
-			fileUtils.getConfig().set("MySQL.Enabled", true);
+			fileUtils.getConfiguration().set("MySQL.Enabled", true);
 			
 			user.updatePermissions();
 		}
@@ -147,14 +147,14 @@ public class ImportUtils {
 		
 		mysqlPermissionManager.setValues(new HashMap<>());
 		
-		fileUtils.getConfig().set("MySQL.Enabled", false);
+		fileUtils.getConfiguration().set("MySQL.Enabled", false);
 		fileUtils.saveFile();
 		
 		List<PermissionGroup> groups = permissionGroupManager.getPermissionGroups();
 		List<String> uuids = permissionUserManager.getPermissionPlayerUUIDs();
 		
 		for (PermissionGroup group : groups) {
-			fileUtils.getConfig().set("MySQL.Enabled", false);
+			fileUtils.getConfiguration().set("MySQL.Enabled", false);
 			
 			String groupName = group.getName();
 			String prefix = group.getPrefix();
@@ -167,7 +167,7 @@ public class ImportUtils {
 			List<String> permissions = group.getPermissions();
 			List<String> members = group.getMemberUUIDs();
 			
-			fileUtils.getConfig().set("MySQL.Enabled", true);
+			fileUtils.getConfiguration().set("MySQL.Enabled", true);
 			
 			PermissionGroup sqlGroup = new PermissionGroup(groupName);
 			sqlGroup.registerGroupIfNotExisting();
@@ -193,7 +193,7 @@ public class ImportUtils {
 		}
 		
 		for (String uuid : uuids) {
-			fileUtils.getConfig().set("MySQL.Enabled", false);
+			fileUtils.getConfiguration().set("MySQL.Enabled", false);
 			
 			PermissionUser user = permissionUserManager.getPermissionPlayer(UUID.fromString(uuid));
 			String prefix = user.getPrefix();
@@ -204,12 +204,12 @@ public class ImportUtils {
 			String tempGroupName = null;
 			long tempGroupTime = 0L;
 			
-			if(permissionConfigUtils.getConfig().getStringList("TempRanks").contains(uuid)) {
-				tempGroupName = permissionConfigUtils.getConfig().getString("Ranks." + uuid + ".GroupName");
-				tempGroupTime = permissionConfigUtils.getConfig().getLong("Ranks." + uuid + ".Time");
+			if(permissionConfigUtils.getConfiguration().getStringList("TempRanks").contains(uuid)) {
+				tempGroupName = permissionConfigUtils.getConfiguration().getString("Ranks." + uuid + ".GroupName");
+				tempGroupTime = permissionConfigUtils.getConfiguration().getLong("Ranks." + uuid + ".Time");
 			}
 			
-			fileUtils.getConfig().set("MySQL.Enabled", true);
+			fileUtils.getConfiguration().set("MySQL.Enabled", true);
 			
 			PermissionUser sqlUser = new PermissionUser(UUID.fromString(uuid));
 			
@@ -234,7 +234,7 @@ public class ImportUtils {
 			user.updatePermissions();
 		}
 		
-		if (fileUtils.getConfig().getBoolean("Settings.UsePrefixesAndSuffixes"))
+		if (fileUtils.getConfiguration().getBoolean("Settings.UsePrefixesAndSuffixes"))
 			permissionSystem.updatePrefixesAndSuffixes();
 		
 		fileUtils.saveFile();

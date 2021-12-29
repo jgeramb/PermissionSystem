@@ -7,31 +7,31 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import net.dev.eazynick.api.NickManager;
 import net.dev.permissions.PermissionSystem;
-import net.dev.permissions.utils.FileUtils;
-import net.dev.permissions.utils.permissionmanagement.PermissionUser;
+import net.dev.permissions.utilities.FileUtils;
+import net.dev.permissions.utilities.permissionmanagement.PermissionUser;
 
 public class AsyncPlayerChatListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onAsyncPlayerChat(AsyncPlayerChatEvent e) {
+	public void onAsyncPlayerChat(AsyncPlayerChatEvent event) {
 		PermissionSystem permissionSystem = PermissionSystem.getInstance();
 		FileUtils fileUtils = permissionSystem.getFileUtils();
 		
-		if (fileUtils.getConfig().getBoolean("Settings.ReplaceChatFormat")) {
-			Player p = e.getPlayer();
-			PermissionUser permissionUser = new PermissionUser(p.getUniqueId());
+		if (fileUtils.getConfiguration().getBoolean("Settings.ReplaceChatFormat")) {
+			Player player = event.getPlayer();
+			PermissionUser permissionUser = new PermissionUser(player.getUniqueId());
 
 			String prefix = permissionUser.getGroupChatPrefix() + permissionUser.getChatPrefix();
 			String suffix = permissionUser.getChatSuffix() + permissionUser.getGroupChatSuffix();
 
 			if (permissionSystem.isEazyNickInstalled()) {
-				if (new NickManager(p).isNicked()) {
+				if (new NickManager(player).isNicked()) {
 					prefix = "";
 					suffix = "";
 				}
 			}
 			
-			e.setFormat(ChatColor.translateAlternateColorCodes('&', fileUtils.getConfig().getString("Settings.ChatFormat")).replace("%prefix%", prefix).replace("%suffix%", suffix).replace("%displayName%", p.getDisplayName()).replace("%name%", p.getName()).replace("%message%", e.getMessage().replaceAll("%", "%%")));
+			event.setFormat(ChatColor.translateAlternateColorCodes('&', fileUtils.getConfiguration().getString("Settings.ChatFormat")).replace("%prefix%", prefix).replace("%suffix%", suffix).replace("%displayName%", player.getDisplayName()).replace("%name%", player.getName()).replace("%message%", event.getMessage().replaceAll("%", "%%")));
 		}
 	}
 
